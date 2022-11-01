@@ -2,9 +2,9 @@ package courses
 
 import (
 	"context"
-	"licheropew/golang-united-courses/pkg/api"
-	"licheropew/golang-united-courses/pkg/db"
-	"licheropew/golang-united-courses/pkg/models"
+	"licheropew/golang-united-courses/internal/api"
+	"licheropew/golang-united-courses/internal/db"
+	"licheropew/golang-united-courses/internal/models"
 	"log"
 
 	"google.golang.org/protobuf/types/known/emptypb"
