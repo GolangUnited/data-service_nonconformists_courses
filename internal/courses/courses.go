@@ -44,13 +44,19 @@ func (s *Server) Update(ctx context.Context, request *api.UpdateRequest) (*empty
 	course.Id = request.Id
 	course.Title = request.Title
 	course.Description = request.Description
-	s.C.DB.Updates(&course)
+	t := s.C.DB.Updates(&course)
+	if t.Error != nil {
+		log.Fatal(t.Error)
+	}
 	return &emptypb.Empty{}, nil
 }
 
 func (s *Server) Delete(ctx context.Context, request *api.DeleteRequest) (*emptypb.Empty, error) {
 	var course models.Course
 	course.Id = request.Id
-	s.C.DB.Delete(&course)
+	t := s.C.DB.Delete(&course)
+	if t.Error != nil {
+		log.Fatal(t.Error)
+	}
 	return &emptypb.Empty{}, nil
 }

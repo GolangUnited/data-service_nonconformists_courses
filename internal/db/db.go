@@ -1,6 +1,8 @@
 package db
 
 import (
+	"licheropew/golang-united-courses/internal/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -14,11 +16,11 @@ func Init(url string) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = db.AutoMigrate(&models.Course{})
+	if err != nil {
+		return nil, err
+	}
 	return &Handler{db}, err
-}
-
-func (h *Handler) AutoMigrate(i ...interface{}) error {
-	return h.DB.AutoMigrate(i)
 }
 
 func (h *Handler) Close() error {
