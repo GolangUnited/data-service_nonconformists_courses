@@ -1,13 +1,14 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type Course struct {
-	Id          uint64 `json:"id" gorm:"primaryKey"`
+	gorm.Model
 	Title       string
 	Description string
 	CreatedBy   string
-	CreatedAt   time.Time
 	UpdatedBy   string
-	UpdatedAt   time.Time
+	DeletedBy   string
 }

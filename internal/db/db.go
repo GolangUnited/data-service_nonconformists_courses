@@ -1,7 +1,7 @@
 package db
 
 import (
-	"licheropew/golang-united-courses/internal/models"
+	"golang-united-courses/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

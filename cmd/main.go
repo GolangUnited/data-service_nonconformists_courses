@@ -1,11 +1,12 @@
 package main
 
 import (
-	"licheropew/golang-united-courses/internal/api"
-	"licheropew/golang-united-courses/internal/courses"
-	"licheropew/golang-united-courses/internal/db"
+	"golang-united-courses/internal/api"
+	"golang-united-courses/internal/courses"
+	"golang-united-courses/internal/db"
 	"log"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 )
@@ -15,8 +16,15 @@ func main() {
 }
 
 func runGrpc() {
-	s := grpc.NewServer()
-	h, err := db.Init("postgres://postgres:postgrespw@localhost:49155")
+	db_host := os.Getenv("COURSES_DB_HOST")
+	db_port := os.Getenv("COURSES_DB_PORT")
+	db_user := os.Getenv("COURSES_DB_USER")
+	db_password := os.Getenv("COURSES_DB_PASSWORD")
+	db_name := os.Getenv("COURSES_DB_NAME")
+
+	url := "host=" + db_host + " port=" + db_port + " user=" + db_user + " password=" + db_password + " database=" + db_name + " sslmode=disable TimeZone=Europe/Moscow"
+
+	h, err := db.Init(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,6 +32,8 @@ func runGrpc() {
 	myCourse := &courses.Server{
 		C: h,
 	}
+
+	s := grpc.NewServer()
 
 	api.RegisterCoursesServer(s, myCourse)
 
