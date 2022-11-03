@@ -22,7 +22,7 @@ func runGrpc() {
 	db_password := os.Getenv("COURSES_DB_PASSWORD")
 	db_name := os.Getenv("COURSES_DB_NAME")
 	db_port := os.Getenv("COURSES_DB_PORT")
-
+	// database URL
 	url := fmt.Sprintf("host=%s user=%s password=%s database=%s port=%s  sslmode=disable TimeZone=Europe/Moscow", db_host, db_user, db_password, db_name, db_port)
 
 	h, err := db.Init(url)
