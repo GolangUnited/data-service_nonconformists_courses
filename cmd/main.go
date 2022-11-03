@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"golang-united-courses/internal/api"
 	"golang-united-courses/internal/courses"
 	"golang-united-courses/internal/db"
@@ -17,12 +18,12 @@ func main() {
 
 func runGrpc() {
 	db_host := os.Getenv("COURSES_DB_HOST")
-	db_port := os.Getenv("COURSES_DB_PORT")
 	db_user := os.Getenv("COURSES_DB_USER")
 	db_password := os.Getenv("COURSES_DB_PASSWORD")
 	db_name := os.Getenv("COURSES_DB_NAME")
+	db_port := os.Getenv("COURSES_DB_PORT")
 
-	url := "host=" + db_host + " port=" + db_port + " user=" + db_user + " password=" + db_password + " database=" + db_name + " sslmode=disable TimeZone=Europe/Moscow"
+	url := fmt.Sprintf("host=%s user=%s password=%s database=%s port=%s  sslmode=disable TimeZone=Europe/Moscow", db_host, db_user, db_password, db_name, db_port)
 
 	h, err := db.Init(url)
 	if err != nil {

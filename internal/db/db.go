@@ -11,8 +11,8 @@ type Handler struct {
 	DB *gorm.DB
 }
 
-func Init(url string) (*Handler, error) {
-	db, err := gorm.Open(postgres.Open(url), &gorm.Config{})
+func Init(dsn string) (*Handler, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
