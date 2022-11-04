@@ -25,8 +25,7 @@ func (s *CourseServer) Create(ctx context.Context, request *api.CreateRequest) (
 	course.CreatedBy = request.CreatedBy
 	t := s.Course.DB.Create(&course)
 	if t.Error != nil {
-		err := status.Error(codes.Internal, fmt.Sprintf("Can't create item. Reason: %s", t.Error))
-		return nil, err
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't create item. Reason: %s", t.Error))
 	}
 	return &api.CreateResponse{
 		Id: uint32(course.ID),
@@ -58,7 +57,7 @@ func (s *CourseServer) Update(ctx context.Context, request *api.UpdateRequest) (
 	course.Title = request.Title
 	course.Description = request.Description
 	course.UpdatedBy = request.UpdatedBy
-	t := s.Course.DB.First(&course, "id = ?", course.ID).Updates(&course)
+	t := s.Course.DB.First(&course, course.ID).Updates(&course)
 	if t.Error != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't update item with id %d. Reason: %s", course.ID, t.Error))
 	}
@@ -69,7 +68,7 @@ func (s *CourseServer) Delete(ctx context.Context, request *api.DeleteRequest) (
 	var course models.Course
 	course.ID = uint(request.Id)
 	course.DeletedBy = request.DeletedBy
-	t := s.Course.DB.First(&course, "id = ?", course.ID).Updates(&course).Delete(&course)
+	t := s.Course.DB.First(&course, course.ID).Updates(&course).Delete(&course)
 	if t.Error != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't delete item with id %d. Reason: %s", course.ID, t.Error))
 	}
