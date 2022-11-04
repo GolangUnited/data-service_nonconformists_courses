@@ -6,6 +6,7 @@ import (
 
 type Course struct {
 	gorm.Model
+	UserID      uint32
 	Title       string
 	Description string
 	CreatedBy   string

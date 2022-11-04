@@ -23,6 +23,7 @@ func (s *CourseServer) Create(ctx context.Context, request *api.CreateRequest) (
 	course.Title = request.Title
 	course.Description = request.Description
 	course.CreatedBy = request.CreatedBy
+	course.UserID = request.UserId
 	t := s.Course.DB.Create(&course)
 	if t.Error != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't create item. Reason: %s", t.Error))
@@ -43,6 +44,7 @@ func (s *CourseServer) Get(ctx context.Context, request *api.GetRequest) (*api.G
 		Title:       course.Title,
 		Description: course.Description,
 		CreatedBy:   course.CreatedBy,
+		UserId:      course.UserID,
 		CreatedAt:   timestamppb.New(course.CreatedAt),
 		UpdatedBy:   course.UpdatedBy,
 		UpdatedAt:   timestamppb.New(course.UpdatedAt),
@@ -57,6 +59,7 @@ func (s *CourseServer) Update(ctx context.Context, request *api.UpdateRequest) (
 	course.Title = request.Title
 	course.Description = request.Description
 	course.UpdatedBy = request.UpdatedBy
+	course.UserID = request.UserId
 	t := s.Course.DB.First(&course, course.ID).Updates(&course)
 	if t.Error != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't update item with id %d. Reason: %s", course.ID, t.Error))
@@ -73,4 +76,28 @@ func (s *CourseServer) Delete(ctx context.Context, request *api.DeleteRequest) (
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't delete item with id %d. Reason: %s", course.ID, t.Error))
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (s *CourseServer) GetList(ctx context.Context, request *api.GetListRequest) (*api.GetListResponse, error) {
+	var courses []models.Course
+	t := s.Course.DB.Limit(int(request.Limit)).Offset(int(request.Offset)).Find(&courses, "user_id = ?", request.UserId)
+	if t.Error != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't get items list with UserId %d. Reason: %s", request.UserId, t.Error))
+	}
+	result := &api.GetListResponse{}
+	result.Courses = make([]*api.GetResponse, 0, len(courses))
+	for _, c := range courses {
+		result.Courses = append(result.Courses, &api.GetResponse{
+			Title:       c.Title,
+			Description: c.Description,
+			CreatedBy:   c.CreatedBy,
+			UserId:      c.UserID,
+			CreatedAt:   timestamppb.New(c.CreatedAt),
+			UpdatedBy:   c.UpdatedBy,
+			UpdatedAt:   timestamppb.New(c.UpdatedAt),
+			DeletedBy:   c.DeletedBy,
+			DeletedAt:   timestamppb.New(c.DeletedAt.Time),
+		})
+	}
+	return result, nil
 }

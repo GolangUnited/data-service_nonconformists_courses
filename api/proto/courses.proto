@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package courses;
 
-option go_package = "./internal/api";
+option go_package = "./pkg/api";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -12,12 +12,14 @@ service Courses {
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Update(UpdateRequest) returns (google.protobuf.Empty) {}
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
+    rpc GetList(GetListRequest) returns (GetListResponse) {}
 }
 
 message CreateRequest {
     string title = 1;
     string description = 2;
     string created_by = 3;
+    uint32 user_id = 4;
 }
 
 message CreateResponse {
@@ -32,11 +34,12 @@ message GetResponse {
     string title = 1;
     string description = 2;
     string created_by = 3;
-    google.protobuf.Timestamp created_at = 4;
-    string updated_by = 5;
-    google.protobuf.Timestamp updated_at = 6;
-    string deleted_by = 7;
-    google.protobuf.Timestamp deleted_at = 8;
+    uint32 user_id = 4;
+    google.protobuf.Timestamp created_at = 5;
+    string updated_by = 6;
+    google.protobuf.Timestamp updated_at = 7;
+    string deleted_by = 8;
+    google.protobuf.Timestamp deleted_at = 9;
 }
 
 message DeleteRequest {
@@ -49,4 +52,15 @@ message UpdateRequest {
     string title = 2;
     string description = 3;
     string updated_by = 4;
+    uint32 user_id = 5;
+}
+
+message GetListRequest {
+    uint32 user_id = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+}
+
+message GetListResponse {
+    repeated GetResponse courses = 1;
 }
