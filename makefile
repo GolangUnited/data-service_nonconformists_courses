@@ -24,7 +24,7 @@ db-remove: db-stop
 
 app-start: app-stop
 	docker build -t golang-united-courses .
-	docker run --name golang-united-courses --network my-net -p 8080:8080 -d --rm -e COURSES_DB_HOST=postgres -e COURSES_DB_PORT -e COURSES_DB_USER -e COURSES_DB_PASSWORD -e COURSES_DB_NAME golang-united-courses
+	docker run --name golang-united-courses --network my-net -p 8080:8080 -d --rm -e COURSES_DB_HOST=postgres -e COURSES_DB_USER=postgres -e COURSES_DB_PASSWORD=password -e COURSES_DB_NAME=postgres -e COURSES_DB_PORT=5432 golang-united-courses
 
 app-stop:
 	docker stop golang-united-courses || true
