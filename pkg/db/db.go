@@ -1,17 +1,17 @@
 package db
 
 import (
-	"golang-united-courses/internal/models"
+	"golang-united-courses/pkg/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type Handler struct {
+type Database struct {
 	DB *gorm.DB
 }
 
-func Init(dsn string) (*Handler, error) {
+func Init(dsn string) (*Database, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
@@ -20,10 +20,10 @@ func Init(dsn string) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Handler{db}, err
+	return &Database{db}, err
 }
 
-func (h *Handler) Close() error {
+func (h *Database) Close() error {
 	db, err := h.DB.DB()
 	if err != nil {
 		return err
