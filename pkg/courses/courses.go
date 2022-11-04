@@ -38,8 +38,7 @@ func (s *CourseServer) Get(ctx context.Context, request *api.GetRequest) (*api.G
 	course.ID = uint(request.Id)
 	t := s.Course.DB.First(&course)
 	if t.Error != nil {
-		err := status.Error(codes.NotFound, fmt.Sprintf("item with id %d was not found", course.ID))
-		return nil, err
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't get item with id %d. Reason: %s", course.ID, t.Error))
 	}
 	return &api.GetResponse{
 		Title:       course.Title,
@@ -61,8 +60,7 @@ func (s *CourseServer) Update(ctx context.Context, request *api.UpdateRequest) (
 	course.UpdatedBy = request.UpdatedBy
 	t := s.Course.DB.First(&course, "id = ?", course.ID).Updates(&course)
 	if t.Error != nil {
-		err := status.Error(codes.Internal, fmt.Sprintf("Can't update item. Reason: %s", t.Error))
-		return nil, err
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't update item with id %d. Reason: %s", course.ID, t.Error))
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -73,8 +71,7 @@ func (s *CourseServer) Delete(ctx context.Context, request *api.DeleteRequest) (
 	course.DeletedBy = request.DeletedBy
 	t := s.Course.DB.First(&course, "id = ?", course.ID).Updates(&course).Delete(&course)
 	if t.Error != nil {
-		err := status.Error(codes.Internal, fmt.Sprintf("Can't delete item. Reason: %s", t.Error))
-		return nil, err
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't delete item with id %d. Reason: %s", course.ID, t.Error))
 	}
 	return &emptypb.Empty{}, nil
 }
