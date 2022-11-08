@@ -78,13 +78,13 @@ func (s *CourseServer) Delete(ctx context.Context, request *api.DeleteRequest) (
 	return &emptypb.Empty{}, nil
 }
 
-func (s *CourseServer) GetList(ctx context.Context, request *api.GetListRequest) (*api.GetListResponse, error) {
+func (s *CourseServer) List(ctx context.Context, request *api.ListRequest) (*api.ListResponse, error) {
 	var courses []models.Course
 	t := s.Course.DB.Limit(int(request.Limit)).Offset(int(request.Offset)).Find(&courses, "user_id = ?", request.UserId)
 	if t.Error != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't get items list with UserId %d. Reason: %s", request.UserId, t.Error))
 	}
-	result := &api.GetListResponse{}
+	result := &api.ListResponse{}
 	result.Courses = make([]*api.GetResponse, 0, len(courses))
 	for _, c := range courses {
 		result.Courses = append(result.Courses, &api.GetResponse{

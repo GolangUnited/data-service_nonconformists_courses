@@ -12,7 +12,7 @@ service Courses {
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Update(UpdateRequest) returns (google.protobuf.Empty) {}
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
-    rpc GetList(GetListRequest) returns (GetListResponse) {}
+    rpc GetList(ListRequest) returns (ListResponse) {}
 }
 
 message CreateRequest {
@@ -55,12 +55,12 @@ message UpdateRequest {
     uint32 user_id = 5;
 }
 
-message GetListRequest {
+message ListRequest {
     uint32 user_id = 1;
     uint32 limit = 2;
     uint32 offset = 3;
 }
 
-message GetListResponse {
+message ListResponse {
     repeated GetResponse courses = 1;
 }
