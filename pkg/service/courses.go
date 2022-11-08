@@ -101,7 +101,7 @@ func (s *CourseServer) List(ctx context.Context, request *api.ListRequest) (*api
 	if t.Error != nil {
 		switch {
 		case errors.Is(t.Error, gorm.ErrRecordNotFound):
-			return nil, status.Error(codes.NotFound, fmt.Sprintf("Can't list items with id %d.", t.Error))
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("Can't list items with id %d.", request.UserId))
 		default:
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Can't perform List request. Reason: %s", t.Error))
 		}
