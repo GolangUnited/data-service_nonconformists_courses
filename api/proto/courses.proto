@@ -12,7 +12,7 @@ service Courses {
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Update(UpdateRequest) returns (google.protobuf.Empty) {}
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
-    rpc GetList(ListRequest) returns (ListResponse) {}
+    rpc List(ListRequest) returns (ListResponse) {}
 }
 
 message CreateRequest {
