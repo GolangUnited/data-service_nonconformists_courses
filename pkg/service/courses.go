@@ -1,7 +1,8 @@
-package courses
+package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"golang-united-courses/pkg/api"
 	"golang-united-courses/pkg/db"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm"
 )
 
 type CourseServer struct {
@@ -38,7 +40,12 @@ func (s *CourseServer) Get(ctx context.Context, request *api.GetRequest) (*api.G
 	course.ID = uint(request.Id)
 	t := s.Course.DB.First(&course)
 	if t.Error != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't get item with id %d. Reason: %s", course.ID, t.Error))
+		switch {
+		case errors.Is(t.Error, gorm.ErrRecordNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("Can't get item with id %d.", course.ID))
+		default:
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Can't perform Get request. Reason: %s", t.Error))
+		}
 	}
 	return &api.GetResponse{
 		Title:       course.Title,
@@ -62,7 +69,12 @@ func (s *CourseServer) Update(ctx context.Context, request *api.UpdateRequest) (
 	course.UserID = request.UserId
 	t := s.Course.DB.First(&course, course.ID).Updates(&course)
 	if t.Error != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't update item with id %d. Reason: %s", course.ID, t.Error))
+		switch {
+		case errors.Is(t.Error, gorm.ErrRecordNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("Can't update item with id %d.", course.ID))
+		default:
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Can't perform Update request. Reason: %s", t.Error))
+		}
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -73,7 +85,12 @@ func (s *CourseServer) Delete(ctx context.Context, request *api.DeleteRequest) (
 	course.DeletedBy = request.DeletedBy
 	t := s.Course.DB.First(&course, course.ID).Updates(&course).Delete(&course)
 	if t.Error != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't delete item with id %d. Reason: %s", course.ID, t.Error))
+		switch {
+		case errors.Is(t.Error, gorm.ErrRecordNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("Can't delete item with id %d.", course.ID))
+		default:
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Can't perform Delete request. Reason: %s", t.Error))
+		}
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -82,7 +99,12 @@ func (s *CourseServer) List(ctx context.Context, request *api.ListRequest) (*api
 	var courses []models.Course
 	t := s.Course.DB.Limit(int(request.Limit)).Offset(int(request.Offset)).Find(&courses, "user_id = ?", request.UserId)
 	if t.Error != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("Can't get items list with UserId %d. Reason: %s", request.UserId, t.Error))
+		switch {
+		case errors.Is(t.Error, gorm.ErrRecordNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("Can't list items with id %d.", t.Error))
+		default:
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Can't perform List request. Reason: %s", t.Error))
+		}
 	}
 	result := &api.ListResponse{}
 	result.Courses = make([]*api.GetResponse, 0, len(courses))

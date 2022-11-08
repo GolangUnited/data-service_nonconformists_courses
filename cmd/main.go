@@ -3,8 +3,8 @@ package main
 import (
 	"golang-united-courses/config"
 	"golang-united-courses/pkg/api"
-	"golang-united-courses/pkg/courses"
 	"golang-united-courses/pkg/db"
+	"golang-united-courses/pkg/service"
 	"log"
 	"net"
 
@@ -22,7 +22,7 @@ func runGrpc() {
 		log.Fatal(err)
 	}
 	defer myDb.Close()
-	myCourseServer := &courses.CourseServer{
+	myCourseServer := &service.CourseServer{
 		Course: myDb,
 	}
 	s := grpc.NewServer()
