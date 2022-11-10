@@ -19,46 +19,48 @@ message CreateRequest {
     string title = 1;
     string description = 2;
     string created_by = 3;
-    uint32 user_id = 4;
+    string user_id = 4;
 }
 
 message CreateResponse {
-    uint32 id = 1;
+    string id = 1;
 }
 
 message GetRequest {
-    uint32 id = 1;
+    string id = 1;
 }
 
 message GetResponse {
-    string title = 1;
-    string description = 2;
-    string created_by = 3;
-    uint32 user_id = 4;
-    google.protobuf.Timestamp created_at = 5;
-    string updated_by = 6;
-    google.protobuf.Timestamp updated_at = 7;
-    string deleted_by = 8;
-    google.protobuf.Timestamp deleted_at = 9;
+    string id = 1;
+    string title = 2;
+    string description = 3;
+    string user_id = 4;
+    string created_by = 5;
+    google.protobuf.Timestamp created_at = 6;
+    string updated_by = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    string deleted_by = 9;
+    google.protobuf.Timestamp deleted_at = 10;
 }
 
 message DeleteRequest {
-    uint32 id = 1;
+    string id = 1;
     string deleted_by = 2;
 }
 
 message UpdateRequest {
-    uint32 id = 1;
+    string id = 1;
     string title = 2;
     string description = 3;
     string updated_by = 4;
-    uint32 user_id = 5;
+    string user_id = 5;
 }
 
 message ListRequest {
-    uint32 user_id = 1;
+    string user_id = 1;
     uint32 limit = 2;
     uint32 offset = 3;
+    bool show_deleted = 4;
 }
 
 message ListResponse {
