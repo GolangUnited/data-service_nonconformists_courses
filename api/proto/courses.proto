@@ -13,13 +13,16 @@ service Courses {
     rpc Update(UpdateRequest) returns (google.protobuf.Empty) {}
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
     rpc List(ListRequest) returns (ListResponse) {}
+    rpc JoinCourse(JoinCourseRequest) returns (google.protobuf.Empty) {}
+    rpc RenewCourse(RenewCourseRequest) returns (google.protobuf.Empty) {}
+    rpc DeclineCourse(DeclineCourseRequest) returns (google.protobuf.Empty) {}
+    rpc FinishCourse(FinishCourseRequest) returns (google.protobuf.Empty) {}
+    rpc ListCourse(ListCourseRequest) returns (ListCourseResponse) {}
 }
 
 message CreateRequest {
     string title = 1;
     string description = 2;
-    string created_by = 3;
-    string user_id = 4;
 }
 
 message CreateResponse {
@@ -34,35 +37,70 @@ message GetResponse {
     string id = 1;
     string title = 2;
     string description = 3;
-    string user_id = 4;
-    string created_by = 5;
-    google.protobuf.Timestamp created_at = 6;
-    string updated_by = 7;
-    google.protobuf.Timestamp updated_at = 8;
-    string deleted_by = 9;
-    google.protobuf.Timestamp deleted_at = 10;
+    google.protobuf.Timestamp created_at = 4;
+    int32 is_deleted = 5;
 }
 
 message DeleteRequest {
     string id = 1;
-    string deleted_by = 2;
 }
 
 message UpdateRequest {
     string id = 1;
     string title = 2;
     string description = 3;
-    string updated_by = 4;
-    string user_id = 5;
 }
 
 message ListRequest {
-    string user_id = 1;
-    uint32 limit = 2;
-    uint32 offset = 3;
-    bool show_deleted = 4;
+    int32 limit = 1;
+    int32 offset = 2;
+    bool show_deleted = 3;
 }
 
 message ListResponse {
     repeated GetResponse courses = 1;
+}
+
+message UserCourse {
+    string user_id = 1;
+    string course_id = 2;
+    uint32 is_deleted = 3;
+    google.protobuf.Timestamp start_date = 4;
+    google.protobuf.Timestamp finish_date = 5;
+    uint32 persent_finished = 6;
+}
+
+message JoinCourseRequest {
+    string user_id = 1;
+    string course_id = 2;
+}
+
+message RenewCourseRequest {
+    string user_id = 1;
+    string course_id = 2;
+    uint32 persent_finished = 5;
+}
+
+message FinishCourseRequest {
+    string user_id = 1;
+    string course_id = 2;
+    google.protobuf.Timestamp finish_date = 3;
+}
+
+message DeclineCourseRequest {
+    string user_id = 1;
+    string course_id = 2;
+    uint32 is_deleted = 3;
+}
+
+message ListCourseRequest {
+    int32 limit = 1;
+    int32 offset = 2;
+    bool show_deleted = 3;
+    string user_id = 4;
+    string course_id = 5;
+}
+
+message ListCourseResponse {
+    repeated UserCourse user_courses = 1;
 }

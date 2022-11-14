@@ -28,6 +28,11 @@ type CoursesClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
+	JoinCourse(ctx context.Context, in *JoinCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RenewCourse(ctx context.Context, in *RenewCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeclineCourse(ctx context.Context, in *DeclineCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	FinishCourse(ctx context.Context, in *FinishCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListCourse(ctx context.Context, in *ListCourseRequest, opts ...grpc.CallOption) (*ListCourseResponse, error)
 }
 
 type coursesClient struct {
@@ -83,6 +88,51 @@ func (c *coursesClient) List(ctx context.Context, in *ListRequest, opts ...grpc.
 	return out, nil
 }
 
+func (c *coursesClient) JoinCourse(ctx context.Context, in *JoinCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/courses.Courses/JoinCourse", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coursesClient) RenewCourse(ctx context.Context, in *RenewCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/courses.Courses/RenewCourse", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coursesClient) DeclineCourse(ctx context.Context, in *DeclineCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/courses.Courses/DeclineCourse", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coursesClient) FinishCourse(ctx context.Context, in *FinishCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/courses.Courses/FinishCourse", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coursesClient) ListCourse(ctx context.Context, in *ListCourseRequest, opts ...grpc.CallOption) (*ListCourseResponse, error) {
+	out := new(ListCourseResponse)
+	err := c.cc.Invoke(ctx, "/courses.Courses/ListCourse", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CoursesServer is the server API for Courses service.
 // All implementations must embed UnimplementedCoursesServer
 // for forward compatibility
@@ -92,6 +142,11 @@ type CoursesServer interface {
 	Update(context.Context, *UpdateRequest) (*emptypb.Empty, error)
 	Delete(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	List(context.Context, *ListRequest) (*ListResponse, error)
+	JoinCourse(context.Context, *JoinCourseRequest) (*emptypb.Empty, error)
+	RenewCourse(context.Context, *RenewCourseRequest) (*emptypb.Empty, error)
+	DeclineCourse(context.Context, *DeclineCourseRequest) (*emptypb.Empty, error)
+	FinishCourse(context.Context, *FinishCourseRequest) (*emptypb.Empty, error)
+	ListCourse(context.Context, *ListCourseRequest) (*ListCourseResponse, error)
 	mustEmbedUnimplementedCoursesServer()
 }
 
@@ -113,6 +168,21 @@ func (UnimplementedCoursesServer) Delete(context.Context, *DeleteRequest) (*empt
 }
 func (UnimplementedCoursesServer) List(context.Context, *ListRequest) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedCoursesServer) JoinCourse(context.Context, *JoinCourseRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JoinCourse not implemented")
+}
+func (UnimplementedCoursesServer) RenewCourse(context.Context, *RenewCourseRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewCourse not implemented")
+}
+func (UnimplementedCoursesServer) DeclineCourse(context.Context, *DeclineCourseRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeclineCourse not implemented")
+}
+func (UnimplementedCoursesServer) FinishCourse(context.Context, *FinishCourseRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinishCourse not implemented")
+}
+func (UnimplementedCoursesServer) ListCourse(context.Context, *ListCourseRequest) (*ListCourseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCourse not implemented")
 }
 func (UnimplementedCoursesServer) mustEmbedUnimplementedCoursesServer() {}
 
@@ -217,6 +287,96 @@ func _Courses_List_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Courses_JoinCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JoinCourseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).JoinCourse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/JoinCourse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).JoinCourse(ctx, req.(*JoinCourseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Courses_RenewCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenewCourseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).RenewCourse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/RenewCourse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).RenewCourse(ctx, req.(*RenewCourseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Courses_DeclineCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeclineCourseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).DeclineCourse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/DeclineCourse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).DeclineCourse(ctx, req.(*DeclineCourseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Courses_FinishCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishCourseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).FinishCourse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/FinishCourse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).FinishCourse(ctx, req.(*FinishCourseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Courses_ListCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCourseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).ListCourse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/ListCourse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).ListCourse(ctx, req.(*ListCourseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Courses_ServiceDesc is the grpc.ServiceDesc for Courses service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -243,6 +403,26 @@ var Courses_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "List",
 			Handler:    _Courses_List_Handler,
+		},
+		{
+			MethodName: "JoinCourse",
+			Handler:    _Courses_JoinCourse_Handler,
+		},
+		{
+			MethodName: "RenewCourse",
+			Handler:    _Courses_RenewCourse_Handler,
+		},
+		{
+			MethodName: "DeclineCourse",
+			Handler:    _Courses_DeclineCourse_Handler,
+		},
+		{
+			MethodName: "FinishCourse",
+			Handler:    _Courses_FinishCourse_Handler,
+		},
+		{
+			MethodName: "ListCourse",
+			Handler:    _Courses_ListCourse_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
