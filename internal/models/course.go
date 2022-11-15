@@ -16,15 +16,15 @@ type Course struct {
 	Title       string
 	Description string
 	CreatedAt   time.Time
-	IsDeleted   uint32
+	IsDeleted   int32
 }
 
 type UserCourse struct {
 	CourseID        uuid.UUID `gorm:"primaryKey"`
 	UserID          uuid.UUID `gorm:"primaryKey"`
 	CreatedAt       time.Time
-	IsDeleted       uint32
+	IsDeleted       int32
 	StartDate       time.Time
-	PercentFinished uint32
+	PercentFinished int32
 	FinishDate      time.Time
 }

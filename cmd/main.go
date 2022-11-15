@@ -2,9 +2,8 @@ package main
 
 import (
 	"golang-united-courses/config"
-	"golang-united-courses/pkg/api"
-	"golang-united-courses/pkg/db"
-	"golang-united-courses/pkg/service"
+	"golang-united-courses/internal/api"
+	"golang-united-courses/internal/repositories/courses"
 	"log"
 	"net"
 
@@ -17,13 +16,14 @@ func main() {
 
 func runGrpc() {
 	url := config.GetConfig()
-	myDb, err := db.Init(url)
+	myDb := courses.PostgreSql{}
+	err := myDb.Init(url)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer myDb.Close()
-	myCourseServer := &service.CourseServer{
-		Course: myDb,
+	myCourseServer := &api.CourseServer{
+		DB: &myDb,
 	}
 	s := grpc.NewServer()
 	api.RegisterCoursesServer(s, myCourseServer)

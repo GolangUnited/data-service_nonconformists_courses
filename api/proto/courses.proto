@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package courses;
 
-option go_package = "./pkg/api";
+option go_package = "./internal/api";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -13,11 +13,11 @@ service Courses {
     rpc Update(UpdateRequest) returns (google.protobuf.Empty) {}
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
     rpc List(ListRequest) returns (ListResponse) {}
-    rpc JoinCourse(JoinCourseRequest) returns (google.protobuf.Empty) {}
-    rpc RenewCourse(RenewCourseRequest) returns (google.protobuf.Empty) {}
-    rpc DeclineCourse(DeclineCourseRequest) returns (google.protobuf.Empty) {}
-    rpc FinishCourse(FinishCourseRequest) returns (google.protobuf.Empty) {}
-    rpc ListCourse(ListCourseRequest) returns (ListCourseResponse) {}
+    rpc Join(JoinRequest) returns (google.protobuf.Empty) {}
+    rpc Renew(RenewRequest) returns (google.protobuf.Empty) {}
+    rpc Decline(DeclineRequest) returns (google.protobuf.Empty) {}
+    rpc Finish(FinishRequest) returns (google.protobuf.Empty) {}
+    rpc ListUserCourse(ListUserCourseRequest) returns (ListUserCourseResponse) {}
 }
 
 message CreateRequest {
@@ -64,36 +64,36 @@ message ListResponse {
 message UserCourse {
     string user_id = 1;
     string course_id = 2;
-    uint32 is_deleted = 3;
+    int32 is_deleted = 3;
     google.protobuf.Timestamp start_date = 4;
     google.protobuf.Timestamp finish_date = 5;
-    uint32 persent_finished = 6;
+    int32 persent_finished = 6;
 }
 
-message JoinCourseRequest {
+message JoinRequest {
     string user_id = 1;
     string course_id = 2;
 }
 
-message RenewCourseRequest {
+message RenewRequest {
     string user_id = 1;
     string course_id = 2;
-    uint32 persent_finished = 5;
+    int32 persent_finished = 5;
 }
 
-message FinishCourseRequest {
+message FinishRequest {
     string user_id = 1;
     string course_id = 2;
     google.protobuf.Timestamp finish_date = 3;
 }
 
-message DeclineCourseRequest {
+message DeclineRequest {
     string user_id = 1;
     string course_id = 2;
-    uint32 is_deleted = 3;
+    int32 is_deleted = 3;
 }
 
-message ListCourseRequest {
+message ListUserCourseRequest {
     int32 limit = 1;
     int32 offset = 2;
     bool show_deleted = 3;
@@ -101,6 +101,6 @@ message ListCourseRequest {
     string course_id = 5;
 }
 
-message ListCourseResponse {
+message ListUserCourseResponse {
     repeated UserCourse user_courses = 1;
 }

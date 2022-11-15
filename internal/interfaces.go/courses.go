@@ -14,12 +14,13 @@ type ICourseStore interface {
 	Delete(id string) error
 	Update(id, title, desciption string) error
 	GetById(id string) (models.Course, error)
-	List(showDeleted bool, limit, offset uint32) ([]models.Course, error)
+	List(showDeleted bool, limit, offset int32) ([]models.Course, error)
 }
 
 type IUserCourseStore interface {
-	JoinCourse(user_id, course_id string) error
-	DeclineCourse(user_id, course_id string) error
-	UpdateCourse(percent uint32, user_id, course_id string) error
-	ListCourse(user_id, course_id string, limit, offset uint32, showDeleted bool) ([]models.UserCourse, error)
+	Join(user_id, course_id string) error
+	Decline(user_id, course_id string) error
+	Renew(percent int32, user_id, course_id string) error
+	Finish(user_id, course_id string) error
+	ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error)
 }
