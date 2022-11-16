@@ -8,11 +8,12 @@ import (
 )
 
 func (p *PostgreSql) Init(dsn string) error {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var err error
+	p.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	err = db.AutoMigrate(models.Course{}, models.UserCourse{})
+	err = p.DB.AutoMigrate(models.Course{}, models.UserCourse{})
 	if err != nil {
 		return err
 	}
