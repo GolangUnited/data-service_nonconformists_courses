@@ -61,16 +61,16 @@ func (p *PostgreSql) Join(user_id, course_id string) error {
 	return nil
 }
 
-func (p *PostgreSql) GetUserCourse(user_id, course_id string) error {
+func (p *PostgreSql) GetUserCourse(user_id, course_id string) (models.UserCourse, error) {
 	userCourse, err := p.checkId(course_id, user_id)
 	if err != nil {
-		return err
+		return userCourse, err
 	}
 	err = p.DB.First(&userCourse).Error
 	if err != nil {
-		return err
+		return userCourse, err
 	}
-	return nil
+	return userCourse, nil
 }
 
 func (p *PostgreSql) SetProgress(user_id, course_id string, percent uint32) error {

@@ -106,7 +106,7 @@ func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseReque
 	return &emptypb.Empty{}, nil
 }
 
-func (cs *CourseServer) GetUserCourse(ctx context.Context, request *JoinCourseRequest) (*UserCourse, error) {
+func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCourseRequest) (*UserCourse, error) {
 	result, err := cs.DB.GetUserCourse(request.GetUserId(), request.GetCourseId())
 	if err != nil {
 		switch err.Error() {
