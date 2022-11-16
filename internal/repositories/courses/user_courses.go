@@ -61,25 +61,50 @@ func (p *PostgreSql) Join(user_id, course_id string) error {
 	return nil
 }
 
-func (p *PostgreSql) SetProgress(percent uint32, user_id, course_id, status string) error {
+func (p *PostgreSql) GetUserCourse(user_id, course_id string) error {
+	userCourse, err := p.checkId(course_id, user_id)
+	if err != nil {
+		return err
+	}
+	err = p.DB.First(&userCourse).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *PostgreSql) SetProgress(user_id, course_id string, percent uint32) error {
 	userCourse, err := p.checkUserCourse(course_id, user_id)
 	if err != nil {
 		return err
 	}
-	// FUTURE: to uint, check if % only > 100
-	if percent > 100 {
+	switch {
+	case percent <= 100:
+		userCourse.PercentFinished = percent
+	default:
 		return ErrorIncorrectArgument
 	}
-	userCourse.PercentFinished = percent
-	// FUTURE: statuses to INT -> 0 - not started is default; 1 - started; 2 - finished; 3 - deleted/paused; other - ErrIncorrectStatus
-	if status != "" {
-		userCourse.Status = status
+	err = p.DB.Updates(&userCourse).Error
+	if err != nil {
+		return err
 	}
-	if status == "start" && userCourse.StartDate.IsZero() {
+	return nil
+}
+
+func (p *PostgreSql) SetStatus(user_id, course_id, status string) error {
+	userCourse, err := p.checkUserCourse(course_id, user_id)
+	if err != nil {
+		return err
+	}
+	switch status {
+	case "start":
 		userCourse.StartDate = time.Now()
-	}
-	if status == "finish" && userCourse.FinishDate.IsZero() {
+		userCourse.Status = status
+	case "finish":
 		userCourse.FinishDate = time.Now()
+		userCourse.Status = status
+	default:
+		return ErrorIncorrectArgument
 	}
 	err = p.DB.Updates(&userCourse).Error
 	if err != nil {

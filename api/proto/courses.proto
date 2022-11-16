@@ -13,8 +13,10 @@ service Courses {
     rpc Update(UpdateRequest) returns (google.protobuf.Empty) {}
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
     rpc List(ListRequest) returns (ListResponse) {}
-    rpc Join(JoinRequest) returns (google.protobuf.Empty) {}
+    rpc JoinCourse(JoinCourseRequest) returns (google.protobuf.Empty) {}
     rpc SetProgress(SetProgressRequest) returns (google.protobuf.Empty) {}
+    rpc SetStatus(SetStatusRequest) returns (google.protobuf.Empty) {}
+    rpc GetUserCourse(GetUserCourseRequest) returns (UserCourse) {}
     rpc ListUserCourse(ListUserCourseRequest) returns (ListUserCourseResponse) {}
 }
 
@@ -66,9 +68,15 @@ message UserCourse {
     google.protobuf.Timestamp finish_date = 4;
     uint32 persent_finished = 5;
     string status = 6;
+    google.protobuf.Timestamp created_at = 7;
 }
 
-message JoinRequest {
+message JoinCourseRequest {
+    string user_id = 1;
+    string course_id = 2;
+}
+
+message GetUserCourseRequest {
     string user_id = 1;
     string course_id = 2;
 }
@@ -77,8 +85,12 @@ message SetProgressRequest {
     string user_id = 1;
     string course_id = 2;
     uint32 persent_finished = 3;
-    google.protobuf.Timestamp finish_date = 4;
-    string status = 5;
+}
+
+message SetStatusRequest {
+    string user_id = 1;
+    string course_id = 2;
+    string status = 3;
 }
 
 message ListUserCourseRequest {

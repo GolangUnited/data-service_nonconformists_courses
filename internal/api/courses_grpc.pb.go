@@ -28,8 +28,10 @@ type CoursesClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
-	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	JoinCourse(ctx context.Context, in *JoinCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SetProgress(ctx context.Context, in *SetProgressRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SetStatus(ctx context.Context, in *SetStatusRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetUserCourse(ctx context.Context, in *GetUserCourseRequest, opts ...grpc.CallOption) (*UserCourse, error)
 	ListUserCourse(ctx context.Context, in *ListUserCourseRequest, opts ...grpc.CallOption) (*ListUserCourseResponse, error)
 }
 
@@ -86,9 +88,9 @@ func (c *coursesClient) List(ctx context.Context, in *ListRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *coursesClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *coursesClient) JoinCourse(ctx context.Context, in *JoinCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/courses.Courses/Join", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/courses.Courses/JoinCourse", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +100,24 @@ func (c *coursesClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.
 func (c *coursesClient) SetProgress(ctx context.Context, in *SetProgressRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/courses.Courses/SetProgress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coursesClient) SetStatus(ctx context.Context, in *SetStatusRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/courses.Courses/SetStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coursesClient) GetUserCourse(ctx context.Context, in *GetUserCourseRequest, opts ...grpc.CallOption) (*UserCourse, error) {
+	out := new(UserCourse)
+	err := c.cc.Invoke(ctx, "/courses.Courses/GetUserCourse", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +142,10 @@ type CoursesServer interface {
 	Update(context.Context, *UpdateRequest) (*emptypb.Empty, error)
 	Delete(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	List(context.Context, *ListRequest) (*ListResponse, error)
-	Join(context.Context, *JoinRequest) (*emptypb.Empty, error)
+	JoinCourse(context.Context, *JoinCourseRequest) (*emptypb.Empty, error)
 	SetProgress(context.Context, *SetProgressRequest) (*emptypb.Empty, error)
+	SetStatus(context.Context, *SetStatusRequest) (*emptypb.Empty, error)
+	GetUserCourse(context.Context, *GetUserCourseRequest) (*UserCourse, error)
 	ListUserCourse(context.Context, *ListUserCourseRequest) (*ListUserCourseResponse, error)
 	mustEmbedUnimplementedCoursesServer()
 }
@@ -147,11 +169,17 @@ func (UnimplementedCoursesServer) Delete(context.Context, *DeleteRequest) (*empt
 func (UnimplementedCoursesServer) List(context.Context, *ListRequest) (*ListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
-func (UnimplementedCoursesServer) Join(context.Context, *JoinRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
+func (UnimplementedCoursesServer) JoinCourse(context.Context, *JoinCourseRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JoinCourse not implemented")
 }
 func (UnimplementedCoursesServer) SetProgress(context.Context, *SetProgressRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetProgress not implemented")
+}
+func (UnimplementedCoursesServer) SetStatus(context.Context, *SetStatusRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetStatus not implemented")
+}
+func (UnimplementedCoursesServer) GetUserCourse(context.Context, *GetUserCourseRequest) (*UserCourse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserCourse not implemented")
 }
 func (UnimplementedCoursesServer) ListUserCourse(context.Context, *ListUserCourseRequest) (*ListUserCourseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserCourse not implemented")
@@ -259,20 +287,20 @@ func _Courses_List_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Courses_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JoinRequest)
+func _Courses_JoinCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JoinCourseRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoursesServer).Join(ctx, in)
+		return srv.(CoursesServer).JoinCourse(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/courses.Courses/Join",
+		FullMethod: "/courses.Courses/JoinCourse",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoursesServer).Join(ctx, req.(*JoinRequest))
+		return srv.(CoursesServer).JoinCourse(ctx, req.(*JoinCourseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -291,6 +319,42 @@ func _Courses_SetProgress_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CoursesServer).SetProgress(ctx, req.(*SetProgressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Courses_SetStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).SetStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/SetStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).SetStatus(ctx, req.(*SetStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Courses_GetUserCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserCourseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoursesServer).GetUserCourse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/courses.Courses/GetUserCourse",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoursesServer).GetUserCourse(ctx, req.(*GetUserCourseRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -341,12 +405,20 @@ var Courses_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Courses_List_Handler,
 		},
 		{
-			MethodName: "Join",
-			Handler:    _Courses_Join_Handler,
+			MethodName: "JoinCourse",
+			Handler:    _Courses_JoinCourse_Handler,
 		},
 		{
 			MethodName: "SetProgress",
 			Handler:    _Courses_SetProgress_Handler,
+		},
+		{
+			MethodName: "SetStatus",
+			Handler:    _Courses_SetStatus_Handler,
+		},
+		{
+			MethodName: "GetUserCourse",
+			Handler:    _Courses_GetUserCourse_Handler,
 		},
 		{
 			MethodName: "ListUserCourse",

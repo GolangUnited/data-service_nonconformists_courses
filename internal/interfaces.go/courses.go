@@ -21,6 +21,8 @@ type CourseStoreManager interface {
 
 type UserCourseStoreManager interface {
 	Join(user_id, course_id string) error
-	SetProgress(percent uint32, user_id, course_id, status string) error
+	GetUserCourse(user_id, course_id string) (models.UserCourse, error)
+	SetProgress(user_id, course_id string, percent uint32) error
+	SetStatus(user_id, course_id, status string) error
 	ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error)
 }

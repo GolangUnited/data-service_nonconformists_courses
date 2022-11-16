@@ -91,7 +91,7 @@ func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListRe
 	return result, nil
 }
 
-func (cs *CourseServer) Join(ctx context.Context, request *JoinRequest) (*emptypb.Empty, error) {
+func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseRequest) (*emptypb.Empty, error) {
 	err := cs.DB.Join(request.GetUserId(), request.GetCourseId())
 	if err != nil {
 		switch err.Error() {
@@ -106,8 +106,44 @@ func (cs *CourseServer) Join(ctx context.Context, request *JoinRequest) (*emptyp
 	return &emptypb.Empty{}, nil
 }
 
+func (cs *CourseServer) GetUserCourse(ctx context.Context, request *JoinCourseRequest) (*UserCourse, error) {
+	result, err := cs.DB.GetUserCourse(request.GetUserId(), request.GetCourseId())
+	if err != nil {
+		switch err.Error() {
+		case courses.ErrCourseNotFound.Error():
+			return nil, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
+		case courses.ErrorCourseWasDeleted.Error():
+			return nil, status.Error(codes.Aborted, courses.ErrorCourseWasDeleted.Error())
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+	uc := &UserCourse{
+		UserId:          result.UserID.String(),
+		CourseId:        result.CourseID.String(),
+		PersentFinished: result.PercentFinished,
+		Status:          result.Status,
+		CreatedAt:       timestamppb.New(result.CreatedAt),
+	}
+	if !result.FinishDate.IsZero() {
+		uc.FinishDate = timestamppb.New(result.FinishDate)
+	}
+	if !result.StartDate.IsZero() {
+		uc.StartDate = timestamppb.New(result.StartDate)
+	}
+	return uc, nil
+}
+
 func (cs *CourseServer) SetProgress(ctx context.Context, request *SetProgressRequest) (*emptypb.Empty, error) {
-	err := cs.DB.SetProgress(request.GetPersentFinished(), request.GetUserId(), request.GetCourseId(), request.GetStatus())
+	err := cs.DB.SetProgress(request.GetUserId(), request.GetCourseId(), request.GetPersentFinished())
+	if err != nil {
+		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (cs *CourseServer) SetStatus(ctx context.Context, request *SetStatusRequest) (*emptypb.Empty, error) {
+	err := cs.DB.SetStatus(request.GetUserId(), request.GetCourseId(), request.GetStatus())
 	if err != nil {
 		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
 	}
@@ -127,15 +163,13 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 			CourseId:        uc.CourseID.String(),
 			PersentFinished: uc.PercentFinished,
 			Status:          uc.Status,
+			CreatedAt:       timestamppb.New(uc.CreatedAt),
 		}
 		if !uc.FinishDate.IsZero() {
 			ucResponse.FinishDate = timestamppb.New(uc.FinishDate)
 		}
 		if !uc.StartDate.IsZero() {
-			ucResponse.FinishDate = timestamppb.New(uc.StartDate)
-		}
-		if !uc.CreatedAt.IsZero() {
-			ucResponse.FinishDate = timestamppb.New(uc.CreatedAt)
+			ucResponse.StartDate = timestamppb.New(uc.StartDate)
 		}
 		result.UserCourses = append(result.UserCourses, ucResponse)
 	}
