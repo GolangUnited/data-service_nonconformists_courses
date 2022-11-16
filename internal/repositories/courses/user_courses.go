@@ -61,13 +61,13 @@ func (p *PostgreSql) Join(user_id, course_id string) error {
 	return nil
 }
 
-func (p *PostgreSql) SetProgress(percent int32, user_id, course_id, status string) error {
+func (p *PostgreSql) SetProgress(percent uint32, user_id, course_id, status string) error {
 	userCourse, err := p.checkUserCourse(course_id, user_id)
 	if err != nil {
 		return err
 	}
 	// FUTURE: to uint, check if % only > 100
-	if percent < 0 || percent > 100 {
+	if percent > 100 {
 		return ErrorIncorrectArgument
 	}
 	userCourse.PercentFinished = percent

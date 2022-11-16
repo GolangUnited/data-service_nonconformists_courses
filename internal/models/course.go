@@ -25,6 +25,6 @@ type UserCourse struct {
 	CreatedAt       time.Time
 	StartDate       time.Time
 	FinishDate      time.Time
-	PercentFinished int32
+	PercentFinished uint32
 	Status          string
 }

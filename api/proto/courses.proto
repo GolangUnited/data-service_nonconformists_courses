@@ -64,7 +64,7 @@ message UserCourse {
     string course_id = 2;
     google.protobuf.Timestamp start_date = 3;
     google.protobuf.Timestamp finish_date = 4;
-    int32 persent_finished = 5;
+    uint32 persent_finished = 5;
     string status = 6;
 }
 
@@ -76,7 +76,7 @@ message JoinRequest {
 message SetProgressRequest {
     string user_id = 1;
     string course_id = 2;
-    int32 persent_finished = 3;
+    uint32 persent_finished = 3;
     google.protobuf.Timestamp finish_date = 4;
     string status = 5;
 }

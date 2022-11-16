@@ -125,11 +125,17 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 		ucResponse := &UserCourse{
 			UserId:          uc.UserID.String(),
 			CourseId:        uc.CourseID.String(),
-			StartDate:       timestamppb.New(uc.StartDate),
 			PersentFinished: uc.PercentFinished,
+			Status:          uc.Status,
 		}
 		if !uc.FinishDate.IsZero() {
 			ucResponse.FinishDate = timestamppb.New(uc.FinishDate)
+		}
+		if !uc.StartDate.IsZero() {
+			ucResponse.FinishDate = timestamppb.New(uc.StartDate)
+		}
+		if !uc.CreatedAt.IsZero() {
+			ucResponse.FinishDate = timestamppb.New(uc.CreatedAt)
 		}
 		result.UserCourses = append(result.UserCourses, ucResponse)
 	}
