@@ -23,8 +23,8 @@ type UserCourse struct {
 	CourseID        uuid.UUID `gorm:"primaryKey"`
 	UserID          uuid.UUID `gorm:"primaryKey"`
 	CreatedAt       time.Time
-	IsDeleted       int32
 	StartDate       time.Time
-	PercentFinished int32
 	FinishDate      time.Time
+	PercentFinished int32
+	Status          string
 }

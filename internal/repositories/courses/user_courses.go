@@ -46,9 +46,6 @@ func (p *PostgreSql) checkUserCourse(course_id, user_id string) (models.UserCour
 	if err != nil {
 		return userCourse, err
 	}
-	if userCourse.IsDeleted != 0 {
-		return userCourse, ErrorUserCourseWasDeleted
-	}
 	return userCourse, nil
 }
 
@@ -64,41 +61,26 @@ func (p *PostgreSql) Join(user_id, course_id string) error {
 	return nil
 }
 
-func (p *PostgreSql) Decline(user_id, course_id string) error {
+func (p *PostgreSql) SetProgress(percent int32, user_id, course_id, status string) error {
 	userCourse, err := p.checkUserCourse(course_id, user_id)
 	if err != nil {
 		return err
 	}
-	userCourse.IsDeleted = 1
-	err = p.DB.Updates(&userCourse).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (p *PostgreSql) Renew(percent int32, user_id, course_id string) error {
-	userCourse, err := p.checkUserCourse(course_id, user_id)
-	if err != nil {
-		return err
-	}
-	if percent <= 0 || percent > 100 {
+	// FUTURE: to uint, check if % only > 100
+	if percent < 0 || percent > 100 {
 		return ErrorIncorrectArgument
 	}
 	userCourse.PercentFinished = percent
-	err = p.DB.Updates(&userCourse).Error
-	if err != nil {
-		return err
+	// FUTURE: statuses to INT -> 0 - not started is default; 1 - started; 2 - finished; 3 - deleted/paused; other - ErrIncorrectStatus
+	if status != "" {
+		userCourse.Status = status
 	}
-	return nil
-}
-
-func (p *PostgreSql) Finish(user_id, course_id string) error {
-	userCourse, err := p.checkUserCourse(course_id, user_id)
-	if err != nil {
-		return err
+	if status == "start" && userCourse.StartDate.IsZero() {
+		userCourse.StartDate = time.Now()
 	}
-	userCourse.FinishDate = time.Now()
+	if status == "finish" && userCourse.FinishDate.IsZero() {
+		userCourse.FinishDate = time.Now()
+	}
 	err = p.DB.Updates(&userCourse).Error
 	if err != nil {
 		return err
@@ -116,7 +98,7 @@ func (p *PostgreSql) ListUserCourse(user_id, course_id string, limit, offset int
 		q.Offset(int(offset))
 	}
 	if !showDeleted {
-		q.Where("is_deleted = ?", 0)
+		q.Where("status != ?", "deleted")
 	}
 	if user_id != "" {
 		q.Where("user_id = ?", user_id)

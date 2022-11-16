@@ -29,9 +29,7 @@ type CoursesClient interface {
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 	Join(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Renew(ctx context.Context, in *RenewRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Decline(ctx context.Context, in *DeclineRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Finish(ctx context.Context, in *FinishRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SetProgress(ctx context.Context, in *SetProgressRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListUserCourse(ctx context.Context, in *ListUserCourseRequest, opts ...grpc.CallOption) (*ListUserCourseResponse, error)
 }
 
@@ -97,27 +95,9 @@ func (c *coursesClient) Join(ctx context.Context, in *JoinRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *coursesClient) Renew(ctx context.Context, in *RenewRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *coursesClient) SetProgress(ctx context.Context, in *SetProgressRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/courses.Courses/Renew", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *coursesClient) Decline(ctx context.Context, in *DeclineRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/courses.Courses/Decline", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *coursesClient) Finish(ctx context.Context, in *FinishRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/courses.Courses/Finish", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/courses.Courses/SetProgress", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -143,9 +123,7 @@ type CoursesServer interface {
 	Delete(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	List(context.Context, *ListRequest) (*ListResponse, error)
 	Join(context.Context, *JoinRequest) (*emptypb.Empty, error)
-	Renew(context.Context, *RenewRequest) (*emptypb.Empty, error)
-	Decline(context.Context, *DeclineRequest) (*emptypb.Empty, error)
-	Finish(context.Context, *FinishRequest) (*emptypb.Empty, error)
+	SetProgress(context.Context, *SetProgressRequest) (*emptypb.Empty, error)
 	ListUserCourse(context.Context, *ListUserCourseRequest) (*ListUserCourseResponse, error)
 	mustEmbedUnimplementedCoursesServer()
 }
@@ -172,14 +150,8 @@ func (UnimplementedCoursesServer) List(context.Context, *ListRequest) (*ListResp
 func (UnimplementedCoursesServer) Join(context.Context, *JoinRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
 }
-func (UnimplementedCoursesServer) Renew(context.Context, *RenewRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Renew not implemented")
-}
-func (UnimplementedCoursesServer) Decline(context.Context, *DeclineRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Decline not implemented")
-}
-func (UnimplementedCoursesServer) Finish(context.Context, *FinishRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Finish not implemented")
+func (UnimplementedCoursesServer) SetProgress(context.Context, *SetProgressRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetProgress not implemented")
 }
 func (UnimplementedCoursesServer) ListUserCourse(context.Context, *ListUserCourseRequest) (*ListUserCourseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserCourse not implemented")
@@ -305,56 +277,20 @@ func _Courses_Join_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Courses_Renew_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenewRequest)
+func _Courses_SetProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetProgressRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoursesServer).Renew(ctx, in)
+		return srv.(CoursesServer).SetProgress(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/courses.Courses/Renew",
+		FullMethod: "/courses.Courses/SetProgress",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoursesServer).Renew(ctx, req.(*RenewRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Courses_Decline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeclineRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CoursesServer).Decline(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/courses.Courses/Decline",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoursesServer).Decline(ctx, req.(*DeclineRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Courses_Finish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FinishRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CoursesServer).Finish(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/courses.Courses/Finish",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoursesServer).Finish(ctx, req.(*FinishRequest))
+		return srv.(CoursesServer).SetProgress(ctx, req.(*SetProgressRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -409,16 +345,8 @@ var Courses_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Courses_Join_Handler,
 		},
 		{
-			MethodName: "Renew",
-			Handler:    _Courses_Renew_Handler,
-		},
-		{
-			MethodName: "Decline",
-			Handler:    _Courses_Decline_Handler,
-		},
-		{
-			MethodName: "Finish",
-			Handler:    _Courses_Finish_Handler,
+			MethodName: "SetProgress",
+			Handler:    _Courses_SetProgress_Handler,
 		},
 		{
 			MethodName: "ListUserCourse",

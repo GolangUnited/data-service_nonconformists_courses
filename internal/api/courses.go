@@ -106,24 +106,8 @@ func (cs *CourseServer) Join(ctx context.Context, request *JoinRequest) (*emptyp
 	return &emptypb.Empty{}, nil
 }
 
-func (cs *CourseServer) Decline(ctx context.Context, request *DeclineRequest) (*emptypb.Empty, error) {
-	err := cs.DB.Decline(request.GetUserId(), request.GetCourseId())
-	if err != nil {
-		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (cs *CourseServer) Renew(ctx context.Context, request *RenewRequest) (*emptypb.Empty, error) {
-	err := cs.DB.Renew(request.GetPersentFinished(), request.GetUserId(), request.GetCourseId())
-	if err != nil {
-		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (cs *CourseServer) Finish(ctx context.Context, request *FinishRequest) (*emptypb.Empty, error) {
-	err := cs.DB.Finish(request.GetUserId(), request.GetCourseId())
+func (cs *CourseServer) SetProgress(ctx context.Context, request *SetProgressRequest) (*emptypb.Empty, error) {
+	err := cs.DB.SetProgress(request.GetPersentFinished(), request.GetUserId(), request.GetCourseId(), request.GetStatus())
 	if err != nil {
 		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
 	}
@@ -141,7 +125,6 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 		ucResponse := &UserCourse{
 			UserId:          uc.UserID.String(),
 			CourseId:        uc.CourseID.String(),
-			IsDeleted:       uc.IsDeleted,
 			StartDate:       timestamppb.New(uc.StartDate),
 			PersentFinished: uc.PercentFinished,
 		}

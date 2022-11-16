@@ -36,9 +36,6 @@ func (p *PostgreSql) Update(id, title, desciption string) error {
 	if err != nil {
 		return err
 	}
-	if course.IsDeleted != 0 {
-		return ErrorCourseWasDeleted
-	}
 	if title != "" {
 		course.Title = title
 	}
