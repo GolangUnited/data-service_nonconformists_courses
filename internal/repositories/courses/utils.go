@@ -17,9 +17,10 @@ var (
 )
 
 var (
-	ErrRecordNotFound         = errors.New("record not found")
-	ErrorCourseWasDeleted     = errors.New("course was deleted")
-	ErrorUserCourseWasDeleted = errors.New("this course was deleted from user")
-	ErrorIncorrectArgument    = errors.New("incorrect argument")
-	ErrCourseNotFound         = errors.New("course not found")
+	ErrRecordNotFound       = errors.New("record not found")
+	ErrCourseWasDeleted     = errors.New("course was deleted")
+	ErrUserCourseWasDeleted = errors.New("this course was deleted from user")
+	ErrIncorrectArgument    = errors.New("incorrect argument")
+	ErrCourseNotFound       = errors.New("course not found")
+	ErrInvalidFormat        = errors.New("invalid format")
 )

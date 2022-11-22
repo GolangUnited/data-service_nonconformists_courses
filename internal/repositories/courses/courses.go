@@ -21,10 +21,9 @@ func (p *PostgreSql) Delete(id string) error {
 		return err
 	}
 	if course.IsDeleted != 0 {
-		return ErrorCourseWasDeleted
+		return ErrCourseWasDeleted
 	}
-	course.IsDeleted = 1
-	err = p.DB.Updates(&course).Error
+	err = p.DB.Model(&Course).Where("id = ?", id).Update("is_deleted", 1).Error
 	if err != nil {
 		return err
 	}

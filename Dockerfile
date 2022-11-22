@@ -8,5 +8,8 @@ RUN go build -o ./server ./cmd/main.go
 
 FROM alpine
 COPY --from=build /go/src/golang-united-courses/server ./server
+COPY --from=build /go/src/golang-united-courses/.env ./.env
+
+EXPOSE 8080
 
 CMD ["./server"]

@@ -13,6 +13,10 @@ func (p *PostgreSql) Init(dsn string) error {
 	if err != nil {
 		return err
 	}
+	err = p.DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";").Error
+	if err != nil {
+		return err
+	}
 	err = p.DB.AutoMigrate(models.Course{}, models.UserCourse{})
 	if err != nil {
 		return err

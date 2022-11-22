@@ -2,111 +2,33 @@ package courses
 
 import (
 	"golang-united-courses/internal/models"
-	"time"
-
-	"github.com/google/uuid"
 )
 
-func (p *PostgreSql) checkCourseById(course_id string) (uuid.UUID, error) {
-	course, err := p.GetById(course_id)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	if course.IsDeleted != 0 {
-		return uuid.Nil, ErrorCourseWasDeleted
-	}
-	return course.ID, nil
-}
-
-func (p *PostgreSql) checkUserById(user_id string) (uuid.UUID, error) {
-	id, err := uuid.Parse(user_id)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	return id, nil
-}
-
-func (p *PostgreSql) checkId(course_id, user_id string) (models.UserCourse, error) {
-	var userCourse models.UserCourse
-	cid, err := p.checkCourseById(course_id)
-	if err != nil {
-		return userCourse, err
-	}
-	userCourse.CourseID = cid
-	uid, err := p.checkUserById(user_id)
-	if err != nil {
-		return userCourse, err
-	}
-	userCourse.UserID = uid
-	return userCourse, nil
-}
-
-func (p *PostgreSql) checkUserCourse(course_id, user_id string) (models.UserCourse, error) {
-	userCourse, err := p.checkId(course_id, user_id)
-	if err != nil {
-		return userCourse, err
-	}
-	return userCourse, nil
-}
-
-func (p *PostgreSql) Join(user_id, course_id string) error {
-	userCourse, err := p.checkId(course_id, user_id)
-	if err != nil {
-		return err
-	}
-	err = p.DB.Create(&userCourse).Error
+func (p *PostgreSql) Join(uc models.UserCourse) error {
+	uc.PercentFinished = 0
+	uc.Status = "created"
+	err := p.DB.Create(&uc).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (p *PostgreSql) GetUserCourse(user_id, course_id string) (models.UserCourse, error) {
-	userCourse, err := p.checkId(course_id, user_id)
+func (p *PostgreSql) GetUserCourse(uc *models.UserCourse) error {
+	err := p.DB.First(&uc).Error
 	if err != nil {
-		return userCourse, err
-	}
-	err = p.DB.First(&userCourse).Error
-	if err != nil {
-		return userCourse, err
-	}
-	return userCourse, nil
-}
-
-func (p *PostgreSql) SetProgress(user_id, course_id string, percent uint32) error {
-	userCourse, err := p.checkUserCourse(course_id, user_id)
-	if err != nil {
-		return err
-	}
-	switch {
-	case percent <= 100:
-		userCourse.PercentFinished = percent
-	default:
-		return ErrorIncorrectArgument
-	}
-	err = p.DB.Updates(&userCourse).Error
-	if err != nil {
-		return err
+		switch err.Error() {
+		case ErrRecordNotFound.Error():
+			return ErrCourseNotFound
+		default:
+			return err
+		}
 	}
 	return nil
 }
 
-func (p *PostgreSql) SetStatus(user_id, course_id, status string) error {
-	userCourse, err := p.checkUserCourse(course_id, user_id)
-	if err != nil {
-		return err
-	}
-	switch status {
-	case "start":
-		userCourse.StartDate = time.Now()
-		userCourse.Status = status
-	case "finish":
-		userCourse.FinishDate = time.Now()
-		userCourse.Status = status
-	default:
-		return ErrorIncorrectArgument
-	}
-	err = p.DB.Updates(&userCourse).Error
+func (p *PostgreSql) UpdateUserCourse(uc models.UserCourse) error {
+	err := p.DB.Updates(&uc).Error
 	if err != nil {
 		return err
 	}
@@ -115,7 +37,7 @@ func (p *PostgreSql) SetStatus(user_id, course_id, status string) error {
 
 func (p *PostgreSql) ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error) {
 	var userCourses []models.UserCourse
-	q := p.DB.Model(&Course)
+	q := p.DB.Model(&UserCourse)
 	if limit > 0 {
 		q.Limit(int(limit))
 	}

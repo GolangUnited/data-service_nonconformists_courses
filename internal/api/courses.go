@@ -3,7 +3,11 @@ package api
 import (
 	"context"
 	"golang-united-courses/internal/interfaces.go"
+	"golang-united-courses/internal/models"
 	"golang-united-courses/internal/repositories/courses"
+	"time"
+
+	"github.com/google/uuid"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,6 +20,46 @@ type CourseServer struct {
 	UnimplementedCoursesServer
 }
 
+func checkIsValidUUID(id string) (uuid.UUID, error) {
+	cid, err := uuid.Parse(id)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return cid, nil
+}
+
+func getUserCourseUUID(cid, uid string) (models.UserCourse, error) {
+	var uc models.UserCourse
+	courseId, err := checkIsValidUUID(cid)
+	if err != nil {
+		return uc, err
+	}
+	uc.CourseID = courseId
+	userId, err := checkIsValidUUID(uid)
+	if err != nil {
+		return uc, err
+	}
+	uc.UserID = userId
+	return uc, nil
+}
+
+func (cs *CourseServer) checkUserCourse(cid, uid string) (models.UserCourse, error) {
+	uc, err := getUserCourseUUID(cid, uid)
+	if err != nil {
+		return uc, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
+	}
+	err = cs.DB.GetUserCourse(&uc)
+	if err != nil {
+		switch err.Error() {
+		case courses.ErrCourseNotFound.Error():
+			return uc, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
+		default:
+			return uc, status.Error(codes.Internal, err.Error())
+		}
+	}
+	return uc, nil
+}
+
 func (cs *CourseServer) Create(ctx context.Context, request *CreateRequest) (*CreateResponse, error) {
 	result, err := cs.DB.Create(request.GetTitle(), request.GetDescription())
 	if err != nil {
@@ -25,6 +69,10 @@ func (cs *CourseServer) Create(ctx context.Context, request *CreateRequest) (*Cr
 }
 
 func (cs *CourseServer) Get(ctx context.Context, request *GetRequest) (*GetResponse, error) {
+	_, err := checkIsValidUUID(request.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
+	}
 	result, err := cs.DB.GetById(request.GetId())
 	if err != nil {
 		switch err.Error() {
@@ -44,12 +92,14 @@ func (cs *CourseServer) Get(ctx context.Context, request *GetRequest) (*GetRespo
 }
 
 func (cs *CourseServer) Update(ctx context.Context, request *UpdateRequest) (*emptypb.Empty, error) {
+	_, err := checkIsValidUUID(request.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
+	}
 	if err := cs.DB.Update(request.GetId(), request.GetTitle(), request.GetDescription()); err != nil {
 		switch err.Error() {
 		case courses.ErrCourseNotFound.Error():
 			return nil, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
-		case courses.ErrorCourseWasDeleted.Error():
-			return nil, status.Error(codes.Aborted, courses.ErrorCourseWasDeleted.Error())
 		default:
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -58,12 +108,16 @@ func (cs *CourseServer) Update(ctx context.Context, request *UpdateRequest) (*em
 }
 
 func (cs *CourseServer) Delete(ctx context.Context, request *DeleteRequest) (*emptypb.Empty, error) {
+	_, err := checkIsValidUUID(request.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
+	}
 	if err := cs.DB.Delete(request.GetId()); err != nil {
 		switch err.Error() {
 		case courses.ErrCourseNotFound.Error():
 			return nil, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
-		case courses.ErrorCourseWasDeleted.Error():
-			return nil, status.Error(codes.Aborted, courses.ErrorCourseWasDeleted.Error())
+		case courses.ErrCourseWasDeleted.Error():
+			return nil, status.Error(codes.Aborted, courses.ErrCourseWasDeleted.Error())
 		default:
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -92,60 +146,84 @@ func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListRe
 }
 
 func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseRequest) (*emptypb.Empty, error) {
-	err := cs.DB.Join(request.GetUserId(), request.GetCourseId())
+	uc, err := getUserCourseUUID(request.GetCourseId(), request.GetUserId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
+	}
+	result, err := cs.DB.GetById(request.GetCourseId())
 	if err != nil {
 		switch err.Error() {
 		case courses.ErrCourseNotFound.Error():
-			return &emptypb.Empty{}, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
-		case courses.ErrorCourseWasDeleted.Error():
-			return &emptypb.Empty{}, status.Error(codes.Aborted, courses.ErrorCourseWasDeleted.Error())
+			return nil, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
 		default:
-			return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
+			return nil, status.Error(codes.Internal, err.Error())
 		}
+	}
+	if result.IsDeleted != 0 {
+		return nil, status.Error(codes.Aborted, courses.ErrCourseWasDeleted.Error())
+	}
+	err = cs.DB.Join(uc)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &emptypb.Empty{}, nil
 }
 
 func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCourseRequest) (*UserCourse, error) {
-	result, err := cs.DB.GetUserCourse(request.GetUserId(), request.GetCourseId())
+	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
-		switch err.Error() {
-		case courses.ErrCourseNotFound.Error():
-			return nil, status.Error(codes.NotFound, courses.ErrCourseNotFound.Error())
-		case courses.ErrorCourseWasDeleted.Error():
-			return nil, status.Error(codes.Aborted, courses.ErrorCourseWasDeleted.Error())
-		default:
-			return nil, status.Error(codes.Internal, err.Error())
-		}
+		return nil, err
 	}
-	uc := &UserCourse{
-		UserId:          result.UserID.String(),
-		CourseId:        result.CourseID.String(),
-		PersentFinished: result.PercentFinished,
-		Status:          result.Status,
-		CreatedAt:       timestamppb.New(result.CreatedAt),
+	result := &UserCourse{
+		UserId:          uc.UserID.String(),
+		CourseId:        uc.CourseID.String(),
+		PersentFinished: uc.PercentFinished,
+		Status:          uc.Status,
+		CreatedAt:       timestamppb.New(uc.CreatedAt),
 	}
-	if !result.FinishDate.IsZero() {
-		uc.FinishDate = timestamppb.New(result.FinishDate)
+	if !uc.FinishDate.IsZero() {
+		result.FinishDate = timestamppb.New(uc.FinishDate)
 	}
-	if !result.StartDate.IsZero() {
-		uc.StartDate = timestamppb.New(result.StartDate)
+	if !uc.StartDate.IsZero() {
+		result.StartDate = timestamppb.New(uc.StartDate)
 	}
-	return uc, nil
+	return result, nil
 }
 
 func (cs *CourseServer) SetProgress(ctx context.Context, request *SetProgressRequest) (*emptypb.Empty, error) {
-	err := cs.DB.SetProgress(request.GetUserId(), request.GetCourseId(), request.GetPersentFinished())
+	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
-		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
+		return nil, err
+	}
+	if request.GetPersentFinished() > 100 {
+		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
+	}
+	uc.PercentFinished = request.GetPersentFinished()
+	err = cs.DB.UpdateUserCourse(uc)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &emptypb.Empty{}, nil
 }
 
 func (cs *CourseServer) SetStatus(ctx context.Context, request *SetStatusRequest) (*emptypb.Empty, error) {
-	err := cs.DB.SetStatus(request.GetUserId(), request.GetCourseId(), request.GetStatus())
+	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
-		return &emptypb.Empty{}, status.Error(codes.Internal, err.Error())
+		return nil, err
+	}
+	//TODO: statutes -> INT and create MAP?
+	switch request.GetStatus() {
+	case "start":
+		uc.StartDate = time.Now()
+	case "finish":
+		uc.FinishDate = time.Now()
+	default:
+		return nil, status.Error(codes.InvalidArgument, courses.ErrIncorrectArgument.Error())
+	}
+	uc.Status = request.GetStatus()
+	err = cs.DB.UpdateUserCourse(uc)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &emptypb.Empty{}, nil
 }
