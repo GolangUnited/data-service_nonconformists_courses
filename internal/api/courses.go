@@ -169,12 +169,12 @@ func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseReque
 	return &emptypb.Empty{}, nil
 }
 
-func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCourseRequest) (*UserCourse, error) {
+func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCourseRequest) (*UserCourseResponse, error) {
 	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
 		return nil, err
 	}
-	result := &UserCourse{
+	result := &UserCourseResponse{
 		UserId:          uc.UserID.String(),
 		CourseId:        uc.CourseID.String(),
 		PersentFinished: uc.PercentFinished,
@@ -234,9 +234,9 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	result := &ListUserCourseResponse{}
-	result.UserCourses = make([]*UserCourse, 0, len(userCourses))
+	result.UserCourses = make([]*UserCourseResponse, 0, len(userCourses))
 	for _, uc := range userCourses {
-		ucResponse := &UserCourse{
+		ucResponse := &UserCourseResponse{
 			UserId:          uc.UserID.String(),
 			CourseId:        uc.CourseID.String(),
 			PersentFinished: uc.PercentFinished,

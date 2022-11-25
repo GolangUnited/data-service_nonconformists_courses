@@ -31,7 +31,7 @@ type CoursesClient interface {
 	JoinCourse(ctx context.Context, in *JoinCourseRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SetProgress(ctx context.Context, in *SetProgressRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SetStatus(ctx context.Context, in *SetStatusRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetUserCourse(ctx context.Context, in *GetUserCourseRequest, opts ...grpc.CallOption) (*UserCourse, error)
+	GetUserCourse(ctx context.Context, in *GetUserCourseRequest, opts ...grpc.CallOption) (*UserCourseResponse, error)
 	ListUserCourse(ctx context.Context, in *ListUserCourseRequest, opts ...grpc.CallOption) (*ListUserCourseResponse, error)
 }
 
@@ -115,8 +115,8 @@ func (c *coursesClient) SetStatus(ctx context.Context, in *SetStatusRequest, opt
 	return out, nil
 }
 
-func (c *coursesClient) GetUserCourse(ctx context.Context, in *GetUserCourseRequest, opts ...grpc.CallOption) (*UserCourse, error) {
-	out := new(UserCourse)
+func (c *coursesClient) GetUserCourse(ctx context.Context, in *GetUserCourseRequest, opts ...grpc.CallOption) (*UserCourseResponse, error) {
+	out := new(UserCourseResponse)
 	err := c.cc.Invoke(ctx, "/courses.Courses/GetUserCourse", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ type CoursesServer interface {
 	JoinCourse(context.Context, *JoinCourseRequest) (*emptypb.Empty, error)
 	SetProgress(context.Context, *SetProgressRequest) (*emptypb.Empty, error)
 	SetStatus(context.Context, *SetStatusRequest) (*emptypb.Empty, error)
-	GetUserCourse(context.Context, *GetUserCourseRequest) (*UserCourse, error)
+	GetUserCourse(context.Context, *GetUserCourseRequest) (*UserCourseResponse, error)
 	ListUserCourse(context.Context, *ListUserCourseRequest) (*ListUserCourseResponse, error)
 	mustEmbedUnimplementedCoursesServer()
 }
@@ -178,7 +178,7 @@ func (UnimplementedCoursesServer) SetProgress(context.Context, *SetProgressReque
 func (UnimplementedCoursesServer) SetStatus(context.Context, *SetStatusRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetStatus not implemented")
 }
-func (UnimplementedCoursesServer) GetUserCourse(context.Context, *GetUserCourseRequest) (*UserCourse, error) {
+func (UnimplementedCoursesServer) GetUserCourse(context.Context, *GetUserCourseRequest) (*UserCourseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserCourse not implemented")
 }
 func (UnimplementedCoursesServer) ListUserCourse(context.Context, *ListUserCourseRequest) (*ListUserCourseResponse, error) {
