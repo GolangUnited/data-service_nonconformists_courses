@@ -19,22 +19,17 @@ type Config struct {
 	DBType string
 }
 
-var cfg *Config
-
 func New() *Config {
-	if cfg == nil {
-		cfg = &Config{
-			DBCfg: DBConfig{
-				Host:     os.Getenv("COURSES_DB_HOST"),
-				Name:     os.Getenv("COURSES_DB_NAME"),
-				Password: os.Getenv("COURSES_DB_PASSWORD"),
-				Port:     os.Getenv("COURSES_DB_PORT"),
-				User:     os.Getenv("COURSES_DB_USER"),
-				Timezone: os.Getenv("COURSES_DB_SSLMODE"),
-				SslMode:  os.Getenv("COURSES_DB_TZ"),
-			},
-			DBType: os.Getenv("COURSES_DB_TYPE"),
-		}
+	return &Config{
+		DBCfg: DBConfig{
+			Host:     os.Getenv("COURSES_DB_HOST"),
+			Name:     os.Getenv("COURSES_DB_NAME"),
+			Password: os.Getenv("COURSES_DB_PASSWORD"),
+			Port:     os.Getenv("COURSES_DB_PORT"),
+			User:     os.Getenv("COURSES_DB_USER"),
+			Timezone: os.Getenv("COURSES_DB_SSLMODE"),
+			SslMode:  os.Getenv("COURSES_DB_TZ"),
+		},
+		DBType: os.Getenv("COURSES_DB_TYPE"),
 	}
-	return cfg
 }

@@ -26,7 +26,7 @@ func main() {
 
 func runApp() {
 	//get APP configuration
-	conf := *config.New()
+	conf := config.New()
 	var myDb interfaces.CourseManager
 	switch conf.DBType {
 	case "postgres":
