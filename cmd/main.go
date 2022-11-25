@@ -35,13 +35,13 @@ func runApp() {
 		log.Fatal("Database type not implemented")
 	}
 	dbUrl := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
-		conf.DBCfg.COURSES_DB_HOST,
-		conf.DBCfg.COURSES_DB_USER,
-		conf.DBCfg.COURSES_DB_PASSWORD,
-		conf.DBCfg.COURSES_DB_NAME,
-		conf.DBCfg.COURSES_DB_PORT,
-		conf.DBCfg.COURSES_DB_SSLMODE,
-		conf.DBCfg.COURSES_DB_TZ,
+		conf.DBCfg.Host,
+		conf.DBCfg.User,
+		conf.DBCfg.Password,
+		conf.DBCfg.Name,
+		conf.DBCfg.Port,
+		conf.DBCfg.SslMode,
+		conf.DBCfg.Timezone,
 	)
 	// connect to DB
 	if err := myDb.Init(dbUrl); err != nil {
