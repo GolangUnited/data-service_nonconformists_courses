@@ -169,7 +169,7 @@ func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCours
 	result := &UserCourseResponse{
 		UserId:          uc.UserID.String(),
 		CourseId:        uc.CourseID.String(),
-		PersentFinished: uc.PercentFinished,
+		PercentFinished: uc.PercentFinished,
 		Status:          uc.Status,
 		CreatedAt:       timestamppb.New(uc.CreatedAt),
 	}
@@ -187,10 +187,10 @@ func (cs *CourseServer) SetProgress(ctx context.Context, request *SetProgressReq
 	if err != nil {
 		return nil, err
 	}
-	if request.GetPersentFinished() > 100 {
+	if request.GetPercentFinished() > 100 {
 		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
 	}
-	uc.PercentFinished = request.GetPersentFinished()
+	uc.PercentFinished = request.GetPercentFinished()
 	err = cs.DB.UpdateUserCourse(uc)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -231,7 +231,7 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 		ucResponse := &UserCourseResponse{
 			UserId:          uc.UserID.String(),
 			CourseId:        uc.CourseID.String(),
-			PersentFinished: uc.PercentFinished,
+			PercentFinished: uc.PercentFinished,
 			Status:          uc.Status,
 			CreatedAt:       timestamppb.New(uc.CreatedAt),
 		}
