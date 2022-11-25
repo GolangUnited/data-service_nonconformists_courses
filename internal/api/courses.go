@@ -20,22 +20,14 @@ type CourseServer struct {
 	UnimplementedCoursesServer
 }
 
-func checkIsValidUUID(id string) (uuid.UUID, error) {
-	cid, err := uuid.Parse(id)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	return cid, nil
-}
-
 func getUserCourseUUID(cid, uid string) (models.UserCourse, error) {
 	var uc models.UserCourse
-	courseId, err := checkIsValidUUID(cid)
+	courseId, err := uuid.Parse(cid)
 	if err != nil {
 		return uc, err
 	}
 	uc.CourseID = courseId
-	userId, err := checkIsValidUUID(uid)
+	userId, err := uuid.Parse(uid)
 	if err != nil {
 		return uc, err
 	}
@@ -69,7 +61,7 @@ func (cs *CourseServer) Create(ctx context.Context, request *CreateRequest) (*Cr
 }
 
 func (cs *CourseServer) Get(ctx context.Context, request *GetRequest) (*GetResponse, error) {
-	_, err := checkIsValidUUID(request.GetId())
+	_, err := uuid.Parse(request.GetId())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
 	}
@@ -92,7 +84,7 @@ func (cs *CourseServer) Get(ctx context.Context, request *GetRequest) (*GetRespo
 }
 
 func (cs *CourseServer) Update(ctx context.Context, request *UpdateRequest) (*emptypb.Empty, error) {
-	_, err := checkIsValidUUID(request.GetId())
+	_, err := uuid.Parse(request.GetId())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
 	}
@@ -108,7 +100,7 @@ func (cs *CourseServer) Update(ctx context.Context, request *UpdateRequest) (*em
 }
 
 func (cs *CourseServer) Delete(ctx context.Context, request *DeleteRequest) (*emptypb.Empty, error) {
-	_, err := checkIsValidUUID(request.GetId())
+	_, err := uuid.Parse(request.GetId())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, courses.ErrInvalidFormat.Error())
 	}
