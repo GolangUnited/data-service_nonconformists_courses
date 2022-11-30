@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"golang-united-courses/internal/interfaces.go"
+	"golang-united-courses/internal/interfaces"
 	"golang-united-courses/internal/models"
 	"golang-united-courses/internal/repositories/courses"
 	"time"
@@ -123,6 +123,7 @@ func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListRe
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	result := &ListResponse{}
+	result.Total = int32(len(courses))
 	result.Courses = make([]*GetResponse, 0, len(courses))
 	for _, c := range courses {
 		cResponse := &GetResponse{
@@ -226,6 +227,7 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	result := &ListUserCourseResponse{}
+	result.Total = int32(len(userCourses))
 	result.UserCourses = make([]*UserCourseResponse, 0, len(userCourses))
 	for _, uc := range userCourses {
 		ucResponse := &UserCourseResponse{

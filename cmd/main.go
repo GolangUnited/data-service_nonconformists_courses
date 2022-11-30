@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"golang-united-courses/config"
 	"golang-united-courses/internal/api"
-	"golang-united-courses/internal/interfaces.go"
+	"golang-united-courses/internal/interfaces"
 	"golang-united-courses/internal/repositories/courses"
 	"log"
 	"net"
