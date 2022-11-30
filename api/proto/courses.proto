@@ -59,6 +59,7 @@ message ListRequest {
 
 message ListResponse {
     repeated GetResponse courses = 1;
+    int32 total = 2;
 }
 
 message UserCourseResponse {
@@ -103,4 +104,5 @@ message ListUserCourseRequest {
 
 message ListUserCourseResponse {
     repeated UserCourseResponse user_courses = 1;
+    int32 total = 2;
 }
