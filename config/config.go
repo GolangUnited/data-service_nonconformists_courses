@@ -27,8 +27,8 @@ func New() *Config {
 			Password: os.Getenv("COURSES_DB_PASSWORD"),
 			Port:     os.Getenv("COURSES_DB_PORT"),
 			User:     os.Getenv("COURSES_DB_USER"),
-			Timezone: os.Getenv("COURSES_DB_SSLMODE"),
-			SslMode:  os.Getenv("COURSES_DB_TZ"),
+			Timezone: os.Getenv("COURSES_DB_TZ"),
+			SslMode:  os.Getenv("COURSES_DB_SSLMODE"),
 		},
 		DBType: os.Getenv("COURSES_DB_TYPE"),
 	}

@@ -25,10 +25,11 @@ func main() {
 }
 
 func runApp() {
-	//get APP configuration
-	conf := config.New()
 	var myDb interfaces.CourseManager
 	var dbUrl string
+	//get APP configuration
+	conf := config.New()
+	//select db type
 	switch conf.DBType {
 	case "postgres":
 		myDb = new(courses.PostgreSql)
