@@ -51,9 +51,7 @@ func runApp() {
 	}
 	defer myDb.Close()
 	// run GPRC-server
-	myCourseServer := &api.CourseServer{
-		DB: myDb,
-	}
+	myCourseServer := api.New(myDb)
 	s := grpc.NewServer()
 	api.RegisterCoursesServer(s, myCourseServer)
 	c, err := net.Listen("tcp", ":8080")

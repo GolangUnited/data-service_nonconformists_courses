@@ -5,8 +5,7 @@ import (
 )
 
 type CourseManager interface {
-	Init(url string) error
-	Close() error
+	DataBaseManager
 	CourseStoreManager
 	UserCourseStoreManager
 }
@@ -24,4 +23,9 @@ type UserCourseStoreManager interface {
 	GetUserCourse(*models.UserCourse) error
 	UpdateUserCourse(models.UserCourse) error
 	ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error)
+}
+
+type DataBaseManager interface {
+	Init(url string) error
+	Close() error
 }

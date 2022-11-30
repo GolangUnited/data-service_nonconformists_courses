@@ -2,7 +2,10 @@ package courses
 
 import (
 	"golang-united-courses/internal/models"
+	"golang-united-courses/internal/utils"
 )
+
+var Course models.Course
 
 func (p *PostgreSql) Create(title, desciption string) (string, error) {
 	var course models.Course
@@ -21,7 +24,7 @@ func (p *PostgreSql) Delete(id string) error {
 		return err
 	}
 	if course.IsDeleted != 0 {
-		return ErrCourseWasDeleted
+		return utils.ErrCourseWasDeleted
 	}
 	err = p.DB.Model(&Course).Where("id = ?", id).Update("is_deleted", 1).Error
 	if err != nil {
@@ -53,8 +56,8 @@ func (p *PostgreSql) GetById(id string) (models.Course, error) {
 	err := p.DB.Model(&Course).Where("id = ?", id).First(&course).Error
 	if err != nil {
 		switch err.Error() {
-		case ErrRecordNotFound.Error():
-			return course, ErrCourseNotFound
+		case utils.ErrRecordNotFound.Error():
+			return course, utils.ErrCourseNotFound
 		default:
 			return course, err
 		}

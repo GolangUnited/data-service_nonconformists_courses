@@ -1,19 +1,7 @@
-package courses
+package utils
 
 import (
 	"errors"
-	"golang-united-courses/internal/models"
-
-	"gorm.io/gorm"
-)
-
-type PostgreSql struct {
-	DB *gorm.DB
-}
-
-var (
-	UserCourse models.UserCourse
-	Course     models.Course
 )
 
 var (

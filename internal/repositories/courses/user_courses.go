@@ -2,6 +2,7 @@ package courses
 
 import (
 	"golang-united-courses/internal/models"
+	"golang-united-courses/internal/utils"
 )
 
 func (p *PostgreSql) Join(uc models.UserCourse) error {
@@ -18,8 +19,8 @@ func (p *PostgreSql) GetUserCourse(uc *models.UserCourse) error {
 	err := p.DB.First(&uc).Error
 	if err != nil {
 		switch err.Error() {
-		case ErrRecordNotFound.Error():
-			return ErrCourseNotFound
+		case utils.ErrRecordNotFound.Error():
+			return utils.ErrCourseNotFound
 		default:
 			return err
 		}
@@ -37,6 +38,7 @@ func (p *PostgreSql) UpdateUserCourse(uc models.UserCourse) error {
 
 func (p *PostgreSql) ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error) {
 	var userCourses []models.UserCourse
+	var UserCourse models.UserCourse
 	q := p.DB.Model(&UserCourse)
 	if limit > 0 {
 		q.Limit(int(limit))

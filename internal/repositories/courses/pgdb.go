@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type PostgreSql struct {
+	DB *gorm.DB
+}
+
 func (p *PostgreSql) Init(dsn string) error {
 	var err error
 	p.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
