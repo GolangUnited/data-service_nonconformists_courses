@@ -28,21 +28,22 @@ func runApp() {
 	//get APP configuration
 	conf := config.New()
 	var myDb interfaces.CourseManager
+	var dbUrl string
 	switch conf.DBType {
 	case "postgres":
 		myDb = new(courses.PostgreSql)
+		dbUrl = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+			conf.DBCfg.Host,
+			conf.DBCfg.User,
+			conf.DBCfg.Password,
+			conf.DBCfg.Name,
+			conf.DBCfg.Port,
+			conf.DBCfg.SslMode,
+			conf.DBCfg.Timezone,
+		)
 	default:
 		log.Fatal("Database type not implemented")
 	}
-	dbUrl := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
-		conf.DBCfg.Host,
-		conf.DBCfg.User,
-		conf.DBCfg.Password,
-		conf.DBCfg.Name,
-		conf.DBCfg.Port,
-		conf.DBCfg.SslMode,
-		conf.DBCfg.Timezone,
-	)
 	// connect to DB
 	if err := myDb.Init(dbUrl); err != nil {
 		log.Printf("Database connection error: %s", err.Error())
