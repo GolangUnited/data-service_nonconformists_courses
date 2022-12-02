@@ -124,12 +124,17 @@ func (cs *CourseServer) Delete(ctx context.Context, request *DeleteRequest) (*em
 }
 
 func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListResponse, error) {
-	courses, err := cs.DB.List(request.ShowDeleted, request.Limit, request.Offset)
+	courses, err := cs.DB.List(request.GetShowDeleted(), request.GetLimit(), request.GetOffset())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	// second request to get and return number of values without Limit and Offset (send it as zero values) -> goes to Total value as len()
+	coursesTotal, err := cs.DB.List(request.GetShowDeleted(), 0, 0)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	result := &ListResponse{}
-	result.Total = int32(len(courses))
+	result.Total = int32(len(coursesTotal))
 	result.Courses = make([]*GetResponse, 0, len(courses))
 	for _, c := range courses {
 		cResponse := &GetResponse{
@@ -236,8 +241,13 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	// second request to get and return number of values without Limit and Offset (send it as zero values) -> goes to Total value as len()
+	userCoursesTotal, err := cs.DB.ListUserCourse(request.GetUserId(), request.GetCourseId(), 0, 0, request.GetShowDeleted())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 	result := &ListUserCourseResponse{}
-	result.Total = int32(len(userCourses))
+	result.Total = int32(len(userCoursesTotal))
 	result.UserCourses = make([]*UserCourseResponse, 0, len(userCourses))
 	for _, uc := range userCourses {
 		ucResponse := &UserCourseResponse{
