@@ -1,4 +1,4 @@
-package courses
+package db
 
 import (
 	"golang-united-courses/internal/models"

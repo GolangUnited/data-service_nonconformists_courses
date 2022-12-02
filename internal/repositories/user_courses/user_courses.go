@@ -1,11 +1,16 @@
-package courses
+package user_courses
 
 import (
 	"golang-united-courses/internal/models"
+	"golang-united-courses/internal/repositories/db"
 	"golang-united-courses/internal/utils"
 )
 
-func (p *PostgreSql) Join(uc models.UserCourse) error {
+type UserCoursePGSQL struct {
+	*db.PostgreSql
+}
+
+func (p *UserCoursePGSQL) Join(uc models.UserCourse) error {
 	uc.PercentFinished = 0
 	uc.Status = "created"
 	err := p.DB.Create(&uc).Error
@@ -15,7 +20,7 @@ func (p *PostgreSql) Join(uc models.UserCourse) error {
 	return nil
 }
 
-func (p *PostgreSql) GetUserCourse(uc *models.UserCourse) error {
+func (p *UserCoursePGSQL) GetUserCourse(uc *models.UserCourse) error {
 	err := p.DB.First(&uc).Error
 	if err != nil {
 		switch err.Error() {
@@ -28,7 +33,7 @@ func (p *PostgreSql) GetUserCourse(uc *models.UserCourse) error {
 	return nil
 }
 
-func (p *PostgreSql) UpdateUserCourse(uc models.UserCourse) error {
+func (p *UserCoursePGSQL) UpdateUserCourse(uc models.UserCourse) error {
 	err := p.DB.Updates(&uc).Error
 	if err != nil {
 		return err
@@ -36,7 +41,7 @@ func (p *PostgreSql) UpdateUserCourse(uc models.UserCourse) error {
 	return nil
 }
 
-func (p *PostgreSql) ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error) {
+func (p *UserCoursePGSQL) ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error) {
 	var userCourses []models.UserCourse
 	var UserCourse models.UserCourse
 	q := p.DB.Model(&UserCourse)

@@ -1,7 +1,10 @@
 package config
 
 import (
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type DBConfig struct {
@@ -17,6 +20,7 @@ type DBConfig struct {
 type Config struct {
 	DBCfg  DBConfig
 	DBType string
+	Port   string
 }
 
 func New() *Config {
@@ -31,5 +35,12 @@ func New() *Config {
 			SslMode:  os.Getenv("COURSES_DB_SSLMODE"),
 		},
 		DBType: os.Getenv("COURSES_DB_TYPE"),
+		Port:   os.Getenv("COURSES_PORT"),
+	}
+}
+
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env file not found")
 	}
 }

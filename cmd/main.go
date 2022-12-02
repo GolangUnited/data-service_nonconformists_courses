@@ -4,27 +4,15 @@ import (
 	"fmt"
 	"golang-united-courses/config"
 	"golang-united-courses/internal/api"
+	"golang-united-courses/internal/database"
 	"golang-united-courses/internal/interfaces"
-	"golang-united-courses/internal/repositories/courses"
 	"log"
 	"net"
-
-	"github.com/joho/godotenv"
 
 	"google.golang.org/grpc"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println(".env file not found")
-	}
-}
-
 func main() {
-	runApp()
-}
-
-func runApp() {
 	var myDb interfaces.CourseManager
 	var dbUrl string
 	//get APP configuration
@@ -32,7 +20,8 @@ func runApp() {
 	//select db type
 	switch conf.DBType {
 	case "postgres":
-		myDb = new(courses.PostgreSql)
+		myDb = database.NewPgSql()
+		log.Println(myDb)
 		dbUrl = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
 			conf.DBCfg.Host,
 			conf.DBCfg.User,
@@ -49,16 +38,22 @@ func runApp() {
 	if err := myDb.Init(dbUrl); err != nil {
 		log.Printf("Database connection error: %s", err.Error())
 	}
+	log.Println(myDb)
 	defer myDb.Close()
-	// run GPRC-server
-	myCourseServer := api.New(myDb)
-	s := grpc.NewServer()
-	api.RegisterCoursesServer(s, myCourseServer)
-	c, err := net.Listen("tcp", ":8080")
+	// create Course Server API
+	courseServer := api.New(myDb)
+	// reate and run GPRC-server with Course API
+	grpcServer := grpc.NewServer()
+	api.RegisterCoursesServer(grpcServer, courseServer)
+	var port = "8080"
+	if conf.Port != "" {
+		port = conf.Port
+	}
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := s.Serve(c); err != nil {
+	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatal(err)
 	}
 }

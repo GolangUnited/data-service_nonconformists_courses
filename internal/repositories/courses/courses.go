@@ -2,12 +2,17 @@ package courses
 
 import (
 	"golang-united-courses/internal/models"
+	"golang-united-courses/internal/repositories/db"
 	"golang-united-courses/internal/utils"
 )
 
+type CoursePGSQL struct {
+	*db.PostgreSql
+}
+
 var Course models.Course
 
-func (p *PostgreSql) Create(title, desciption string) (string, error) {
+func (p *CoursePGSQL) Create(title, desciption string) (string, error) {
 	var course models.Course
 	course.Title = title
 	course.Description = desciption
@@ -18,7 +23,7 @@ func (p *PostgreSql) Create(title, desciption string) (string, error) {
 	return course.ID.String(), nil
 }
 
-func (p *PostgreSql) Delete(id string) error {
+func (p *CoursePGSQL) Delete(id string) error {
 	course, err := p.GetById(id)
 	if err != nil {
 		return err
@@ -33,7 +38,7 @@ func (p *PostgreSql) Delete(id string) error {
 	return nil
 }
 
-func (p *PostgreSql) Update(id, title, desciption string) error {
+func (p *CoursePGSQL) Update(id, title, desciption string) error {
 	course, err := p.GetById(id)
 	if err != nil {
 		return err
@@ -51,7 +56,7 @@ func (p *PostgreSql) Update(id, title, desciption string) error {
 	return nil
 }
 
-func (p *PostgreSql) GetById(id string) (models.Course, error) {
+func (p *CoursePGSQL) GetById(id string) (models.Course, error) {
 	var course models.Course
 	err := p.DB.Model(&Course).Where("id = ?", id).First(&course).Error
 	if err != nil {
@@ -65,7 +70,7 @@ func (p *PostgreSql) GetById(id string) (models.Course, error) {
 	return course, nil
 }
 
-func (p *PostgreSql) List(showDeleted bool, limit, offset int32) ([]models.Course, error) {
+func (p *CoursePGSQL) List(showDeleted bool, limit, offset int32) ([]models.Course, error) {
 	var courses []models.Course
 	q := p.DB.Model(&Course)
 	if limit > 0 {
