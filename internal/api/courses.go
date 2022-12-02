@@ -5,6 +5,7 @@ import (
 	"golang-united-courses/internal/interfaces"
 	"golang-united-courses/internal/models"
 	"golang-united-courses/internal/utils"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -115,7 +116,8 @@ func (cs *CourseServer) Delete(ctx context.Context, request *DeleteRequest) (*em
 		case utils.ErrCourseNotFound.Error():
 			return nil, status.Error(codes.NotFound, utils.ErrCourseNotFound.Error())
 		case utils.ErrCourseWasDeleted.Error():
-			return nil, status.Error(codes.Aborted, utils.ErrCourseWasDeleted.Error())
+			// TODO: write to log file attempts to deleting deleted values
+			log.Println("attempt to delete already deleted value")
 		default:
 			return nil, status.Error(codes.Internal, err.Error())
 		}
