@@ -21,7 +21,6 @@ func main() {
 	switch conf.DBType {
 	case "postgres":
 		myDb = database.NewPgSql()
-		log.Println(myDb)
 		dbUrl = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
 			conf.DBCfg.Host,
 			conf.DBCfg.User,
@@ -38,7 +37,6 @@ func main() {
 	if err := myDb.Init(dbUrl); err != nil {
 		log.Printf("Database connection error: %s", err.Error())
 	}
-	log.Println(myDb)
 	defer myDb.Close()
 	// create Course Server API
 	courseServer := api.New(myDb)
