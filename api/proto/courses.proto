@@ -68,7 +68,7 @@ message UserCourseResponse {
     google.protobuf.Timestamp start_date = 3;
     google.protobuf.Timestamp finish_date = 4;
     uint32 percent_finished = 5;
-    string status = 6;
+    Statuses status = 6;
     google.protobuf.Timestamp created_at = 7;
 }
 
@@ -91,7 +91,7 @@ message SetProgressRequest {
 message SetStatusRequest {
     string user_id = 1;
     string course_id = 2;
-    string status = 3;
+    Statuses status = 3;
 }
 
 message ListUserCourseRequest {
@@ -105,4 +105,12 @@ message ListUserCourseRequest {
 message ListUserCourseResponse {
     repeated UserCourseResponse user_courses = 1;
     int32 total = 2;
+}
+
+enum Statuses {
+    STATUS_UNKNOWN = 0;
+    STATUS_JOINED = 1;
+    STATUS_STARTED = 2;
+    STATUS_FINISHED = 3;
+    STATUS_DECLINED = 4;
 }

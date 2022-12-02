@@ -13,5 +13,15 @@ type UserCourse struct {
 	StartDate       time.Time
 	FinishDate      time.Time
 	PercentFinished uint32
-	Status          string
+	Status          Statuses `sql:"type:status"`
 }
+
+type Statuses string
+
+const (
+	Unknown  Statuses = "unknown"
+	Joined   Statuses = "joined"
+	Started  Statuses = "started"
+	Finished Statuses = "finished"
+	Declined Statuses = "declined"
+)

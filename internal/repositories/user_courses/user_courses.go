@@ -12,7 +12,7 @@ type UserCoursePGSQL struct {
 
 func (p *UserCoursePGSQL) Join(uc models.UserCourse) error {
 	uc.PercentFinished = 0
-	uc.Status = "created"
+	uc.Status = models.Joined
 	err := p.DB.Create(&uc).Error
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (p *UserCoursePGSQL) ListUserCourse(user_id, course_id string, limit, offse
 		q.Offset(int(offset))
 	}
 	if !showDeleted {
-		q.Where("status != ?", "deleted")
+		q.Where("status != ?", models.Declined)
 	}
 	if user_id != "" {
 		q.Where("user_id = ?", user_id)

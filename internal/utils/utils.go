@@ -11,4 +11,5 @@ var (
 	ErrIncorrectArgument    = errors.New("incorrect argument")
 	ErrCourseNotFound       = errors.New("course not found")
 	ErrInvalidFormat        = errors.New("invalid format")
+	ErrInvalidStatus        = errors.New("this status can't be set")
 )

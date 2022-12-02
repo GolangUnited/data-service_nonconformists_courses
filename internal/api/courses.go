@@ -5,6 +5,7 @@ import (
 	"golang-united-courses/internal/interfaces"
 	"golang-united-courses/internal/models"
 	"golang-united-courses/internal/utils"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -174,17 +175,19 @@ func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCours
 		return nil, err
 	}
 	result := &UserCourseResponse{
-		UserId:          uc.UserID.String(),
-		CourseId:        uc.CourseID.String(),
-		PercentFinished: uc.PercentFinished,
-		Status:          uc.Status,
-		CreatedAt:       timestamppb.New(uc.CreatedAt),
+		UserId:    uc.UserID.String(),
+		CourseId:  uc.CourseID.String(),
+		Status:    selectStatus(uc.Status),
+		CreatedAt: timestamppb.New(uc.CreatedAt),
 	}
 	if !uc.FinishDate.IsZero() {
 		result.FinishDate = timestamppb.New(uc.FinishDate)
 	}
 	if !uc.StartDate.IsZero() {
 		result.StartDate = timestamppb.New(uc.StartDate)
+	}
+	if uc.PercentFinished != 0 {
+		result.PercentFinished = uc.PercentFinished
 	}
 	return result, nil
 }
@@ -212,14 +215,17 @@ func (cs *CourseServer) SetStatus(ctx context.Context, request *SetStatusRequest
 	}
 	//TODO: statutes -> INT and create MAP?
 	switch request.GetStatus() {
-	case "start":
+	case Statuses_STATUS_STARTED:
 		uc.StartDate = time.Now()
-	case "finish":
+		uc.Status = models.Started
+	case Statuses_STATUS_FINISHED:
 		uc.FinishDate = time.Now()
+		uc.Status = models.Finished
+	case Statuses_STATUS_DECLINED:
+		uc.Status = models.Declined
 	default:
-		return nil, status.Error(codes.InvalidArgument, utils.ErrIncorrectArgument.Error())
+		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidStatus.Error())
 	}
-	uc.Status = request.GetStatus()
 	err = cs.DB.UpdateUserCourse(uc)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -237,11 +243,10 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 	result.UserCourses = make([]*UserCourseResponse, 0, len(userCourses))
 	for _, uc := range userCourses {
 		ucResponse := &UserCourseResponse{
-			UserId:          uc.UserID.String(),
-			CourseId:        uc.CourseID.String(),
-			PercentFinished: uc.PercentFinished,
-			Status:          uc.Status,
-			CreatedAt:       timestamppb.New(uc.CreatedAt),
+			UserId:    uc.UserID.String(),
+			CourseId:  uc.CourseID.String(),
+			CreatedAt: timestamppb.New(uc.CreatedAt),
+			Status:    selectStatus(uc.Status),
 		}
 		if !uc.FinishDate.IsZero() {
 			ucResponse.FinishDate = timestamppb.New(uc.FinishDate)
@@ -249,7 +254,27 @@ func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCou
 		if !uc.StartDate.IsZero() {
 			ucResponse.StartDate = timestamppb.New(uc.StartDate)
 		}
+		if uc.PercentFinished != 0 {
+			ucResponse.PercentFinished = uc.PercentFinished
+		}
 		result.UserCourses = append(result.UserCourses, ucResponse)
 	}
+	log.Println(result.String())
 	return result, nil
+}
+
+func selectStatus(status models.Statuses) (s Statuses) {
+	switch status {
+	case models.Joined:
+		s = Statuses_STATUS_JOINED
+	case models.Started:
+		s = Statuses_STATUS_STARTED
+	case models.Finished:
+		s = Statuses_STATUS_FINISHED
+	case models.Declined:
+		s = Statuses_STATUS_DECLINED
+	default:
+		s = Statuses_STATUS_UNKNOWN
+	}
+	return
 }

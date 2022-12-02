@@ -21,6 +21,16 @@ func (p *PostgreSql) Init(dsn string) error {
 	if err != nil {
 		return err
 	}
+	result := p.DB.Exec("SELECT 1 FROM pg_type WHERE typname = 'status';")
+	switch {
+	case result.RowsAffected == 0:
+		err = p.DB.Exec("CREATE TYPE status AS ENUM ('unknown', 'joined', 'started', 'finished', 'declined');").Error
+		if err != nil {
+			return err
+		}
+	case result.Error != nil:
+		return result.Error
+	}
 	err = p.DB.AutoMigrate(models.Course{}, models.UserCourse{})
 	if err != nil {
 		return err
