@@ -25,7 +25,7 @@ func (p *UserCoursePGSQL) GetUserCourse(uc *models.UserCourse) error {
 	if err != nil {
 		switch err.Error() {
 		case utils.ErrRecordNotFound.Error():
-			return utils.ErrCourseNotFound
+			return utils.ErrUserCourseNotFound
 		default:
 			return err
 		}

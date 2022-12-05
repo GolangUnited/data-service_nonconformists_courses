@@ -42,18 +42,19 @@ func getUserCourseUUID(cid, uid string) (models.UserCourse, error) {
 	return uc, nil
 }
 
-func (cs *CourseServer) checkUserCourse(cid, uid string) (models.UserCourse, error) {
+func (cs *CourseServer) getUserCourse(cid, uid string) (models.UserCourse, error) {
 	uc, err := getUserCourseUUID(cid, uid)
 	if err != nil {
-		return uc, status.Error(codes.InvalidArgument, utils.ErrInvalidFormat.Error())
+		return models.UserCourse{}, status.Error(codes.InvalidArgument, utils.ErrInvalidUUIDFormat.Error())
 	}
 	err = cs.DB.GetUserCourse(&uc)
 	if err != nil {
 		switch err.Error() {
-		case utils.ErrCourseNotFound.Error():
-			return uc, status.Error(codes.NotFound, utils.ErrCourseNotFound.Error())
+		case utils.ErrUserCourseNotFound.Error():
+			return models.UserCourse{}, status.Error(codes.NotFound, err.Error())
 		default:
-			return uc, status.Error(codes.Internal, err.Error())
+			log.Printf("internal error: %s", err.Error())
+			return models.UserCourse{}, status.Error(codes.Internal, err.Error())
 		}
 	}
 	return uc, nil
@@ -62,6 +63,7 @@ func (cs *CourseServer) checkUserCourse(cid, uid string) (models.UserCourse, err
 func (cs *CourseServer) Create(ctx context.Context, request *CreateRequest) (*CreateResponse, error) {
 	result, err := cs.DB.Create(request.GetTitle(), request.GetDescription())
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &CreateResponse{Id: result}, nil
@@ -70,14 +72,15 @@ func (cs *CourseServer) Create(ctx context.Context, request *CreateRequest) (*Cr
 func (cs *CourseServer) Get(ctx context.Context, request *GetRequest) (*GetResponse, error) {
 	_, err := uuid.Parse(request.GetId())
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidFormat.Error())
+		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidUUIDFormat.Error())
 	}
 	result, err := cs.DB.GetById(request.GetId())
 	if err != nil {
 		switch err.Error() {
 		case utils.ErrCourseNotFound.Error():
-			return nil, status.Error(codes.NotFound, utils.ErrCourseNotFound.Error())
+			return nil, status.Error(codes.NotFound, err.Error())
 		default:
+			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -93,13 +96,14 @@ func (cs *CourseServer) Get(ctx context.Context, request *GetRequest) (*GetRespo
 func (cs *CourseServer) Update(ctx context.Context, request *UpdateRequest) (*emptypb.Empty, error) {
 	_, err := uuid.Parse(request.GetId())
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidFormat.Error())
+		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidUUIDFormat.Error())
 	}
 	if err := cs.DB.Update(request.GetId(), request.GetTitle(), request.GetDescription()); err != nil {
 		switch err.Error() {
 		case utils.ErrCourseNotFound.Error():
-			return nil, status.Error(codes.NotFound, utils.ErrCourseNotFound.Error())
+			return nil, status.Error(codes.NotFound, err.Error())
 		default:
+			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -109,16 +113,17 @@ func (cs *CourseServer) Update(ctx context.Context, request *UpdateRequest) (*em
 func (cs *CourseServer) Delete(ctx context.Context, request *DeleteRequest) (*emptypb.Empty, error) {
 	_, err := uuid.Parse(request.GetId())
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidFormat.Error())
+		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidUUIDFormat.Error())
 	}
 	if err := cs.DB.Delete(request.GetId()); err != nil {
 		switch err.Error() {
 		case utils.ErrCourseNotFound.Error():
-			return nil, status.Error(codes.NotFound, utils.ErrCourseNotFound.Error())
+			return nil, status.Error(codes.NotFound, err.Error())
 		case utils.ErrCourseWasDeleted.Error():
 			// TODO: write to log file attempts to deleting deleted values
 			log.Println("attempt to delete already deleted value")
 		default:
+			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -128,11 +133,13 @@ func (cs *CourseServer) Delete(ctx context.Context, request *DeleteRequest) (*em
 func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListResponse, error) {
 	courses, err := cs.DB.List(request.GetShowDeleted(), request.GetLimit(), request.GetOffset())
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	// second request to get and return number of values without Limit and Offset (send it as zero values) -> goes to Total value as len()
 	coursesTotal, err := cs.DB.List(request.GetShowDeleted(), 0, 0)
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	result := &ListResponse{}
@@ -154,29 +161,40 @@ func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListRe
 func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseRequest) (*emptypb.Empty, error) {
 	uc, err := getUserCourseUUID(request.GetCourseId(), request.GetUserId())
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidFormat.Error())
+		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidUUIDFormat.Error())
 	}
 	result, err := cs.DB.GetById(request.GetCourseId())
 	if err != nil {
 		switch err.Error() {
 		case utils.ErrCourseNotFound.Error():
-			return nil, status.Error(codes.NotFound, utils.ErrCourseNotFound.Error())
+			return nil, status.Error(codes.NotFound, err.Error())
 		default:
+			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
 	if result.IsDeleted != 0 {
 		return nil, status.Error(codes.Aborted, utils.ErrCourseWasDeleted.Error())
 	}
-	err = cs.DB.Join(uc)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	err = cs.DB.GetUserCourse(&uc)
+	switch {
+	case err.Error() == utils.ErrUserCourseNotFound.Error():
+		if err = cs.DB.Join(uc); err != nil {
+			log.Printf("internal error: %s", err.Error())
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	case uc.Status == models.Declined:
+		uc.Status = models.Joined
+		if err = cs.DB.UpdateUserCourse(uc); err != nil {
+			log.Printf("internal error: %s", err.Error())
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 	return &emptypb.Empty{}, nil
 }
 
 func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCourseRequest) (*UserCourseResponse, error) {
-	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
+	uc, err := cs.getUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +215,7 @@ func (cs *CourseServer) GetUserCourse(ctx context.Context, request *GetUserCours
 }
 
 func (cs *CourseServer) SetProgress(ctx context.Context, request *SetProgressRequest) (*emptypb.Empty, error) {
-	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
+	uc, err := cs.getUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
 		return nil, err
 	}
@@ -207,13 +225,14 @@ func (cs *CourseServer) SetProgress(ctx context.Context, request *SetProgressReq
 	uc.PercentFinished = request.GetPercentFinished()
 	err = cs.DB.UpdateUserCourse(uc)
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &emptypb.Empty{}, nil
 }
 
 func (cs *CourseServer) SetStatus(ctx context.Context, request *SetStatusRequest) (*emptypb.Empty, error) {
-	uc, err := cs.checkUserCourse(request.GetCourseId(), request.GetUserId())
+	uc, err := cs.getUserCourse(request.GetCourseId(), request.GetUserId())
 	if err != nil {
 		return nil, err
 	}
@@ -233,19 +252,25 @@ func (cs *CourseServer) SetStatus(ctx context.Context, request *SetStatusRequest
 	}
 	err = cs.DB.UpdateUserCourse(uc)
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &emptypb.Empty{}, nil
 }
 
 func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCourseRequest) (*ListUserCourseResponse, error) {
+	if _, err := getUserCourseUUID(request.GetCourseId(), request.GetUserId()); err != nil {
+		return nil, status.Error(codes.InvalidArgument, utils.ErrInvalidUUIDFormat.Error())
+	}
 	userCourses, err := cs.DB.ListUserCourse(request.GetUserId(), request.GetCourseId(), request.GetLimit(), request.GetOffset(), request.GetShowDeleted())
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	// second request to get and return number of values without Limit and Offset (send it as zero values) -> goes to Total value as len()
 	userCoursesTotal, err := cs.DB.ListUserCourse(request.GetUserId(), request.GetCourseId(), 0, 0, request.GetShowDeleted())
 	if err != nil {
+		log.Printf("internal error: %s", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	result := &ListUserCourseResponse{}
