@@ -35,7 +35,7 @@ func main() {
 	}
 	// connect to DB
 	if err := myDb.Init(dbUrl); err != nil {
-		log.Printf("Database connection error: %s", err.Error())
+		log.Fatalf("Database connection error: %s", err.Error())
 	}
 	defer myDb.Close()
 	// create Course Server API
@@ -43,11 +43,7 @@ func main() {
 	// reate and run GPRC-server with Course API
 	grpcServer := grpc.NewServer()
 	api.RegisterCoursesServer(grpcServer, courseServer)
-	var port = "8080"
-	if conf.Port != "" {
-		port = conf.Port
-	}
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.Port))
 	if err != nil {
 		log.Fatal(err)
 	}

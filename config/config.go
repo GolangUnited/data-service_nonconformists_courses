@@ -26,17 +26,24 @@ type Config struct {
 func New() *Config {
 	return &Config{
 		DBCfg: DBConfig{
-			Host:     os.Getenv("COURSES_DB_HOST"),
-			Name:     os.Getenv("COURSES_DB_NAME"),
-			Password: os.Getenv("COURSES_DB_PASSWORD"),
-			Port:     os.Getenv("COURSES_DB_PORT"),
-			User:     os.Getenv("COURSES_DB_USER"),
-			Timezone: os.Getenv("COURSES_DB_TZ"),
-			SslMode:  os.Getenv("COURSES_DB_SSLMODE"),
+			Host:     getEnv("COURSES_DB_HOST", ""),
+			Name:     getEnv("COURSES_DB_NAME", ""),
+			Password: getEnv("COURSES_DB_PASSWORD", ""),
+			Port:     getEnv("COURSES_DB_PORT", ""),
+			User:     getEnv("COURSES_DB_USER", ""),
+			Timezone: getEnv("COURSES_DB_TZ", ""),
+			SslMode:  getEnv("COURSES_DB_SSLMODE", ""),
 		},
-		DBType: os.Getenv("COURSES_DB_TYPE"),
-		Port:   os.Getenv("COURSES_PORT"),
+		DBType: getEnv("COURSES_DB_TYPE", ""),
+		Port:   getEnv("COURSES_PORT", "8080"),
 	}
+}
+
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultVal
 }
 
 func init() {
