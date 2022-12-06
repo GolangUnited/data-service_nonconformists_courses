@@ -1,9 +1,9 @@
 package user_courses
 
 import (
+	"golang-united-courses/internal"
 	"golang-united-courses/internal/models"
 	"golang-united-courses/internal/repositories/db"
-	"golang-united-courses/internal/utils"
 )
 
 type UserCoursePGSQL struct {
@@ -13,19 +13,17 @@ type UserCoursePGSQL struct {
 func (p *UserCoursePGSQL) Join(uc models.UserCourse) error {
 	uc.PercentFinished = 0
 	uc.Status = models.Joined
-	err := p.DB.Create(&uc).Error
-	if err != nil {
+	if err := p.DB.Create(&uc).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func (p *UserCoursePGSQL) GetUserCourse(uc *models.UserCourse) error {
-	err := p.DB.First(&uc).Error
-	if err != nil {
+	if err := p.DB.First(&uc).Error; err != nil {
 		switch err.Error() {
-		case utils.ErrRecordNotFound.Error():
-			return utils.ErrUserCourseNotFound
+		case internal.ErrRecordNotFound.Error():
+			return internal.ErrUserCourseNotFound
 		default:
 			return err
 		}
@@ -34,8 +32,7 @@ func (p *UserCoursePGSQL) GetUserCourse(uc *models.UserCourse) error {
 }
 
 func (p *UserCoursePGSQL) UpdateUserCourse(uc models.UserCourse) error {
-	err := p.DB.Updates(&uc).Error
-	if err != nil {
+	if err := p.DB.Updates(&uc).Error; err != nil {
 		return err
 	}
 	return nil
@@ -60,8 +57,7 @@ func (p *UserCoursePGSQL) ListUserCourse(user_id, course_id string, limit, offse
 	if course_id != "" {
 		q.Where("course_id = ?", course_id)
 	}
-	err := q.Find(&userCourses).Error
-	if err != nil {
+	if err := q.Find(&userCourses).Error; err != nil {
 		return nil, err
 	}
 	return userCourses, nil

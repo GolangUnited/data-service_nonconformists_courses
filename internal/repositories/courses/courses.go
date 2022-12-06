@@ -1,9 +1,9 @@
 package courses
 
 import (
+	"golang-united-courses/internal"
 	"golang-united-courses/internal/models"
 	"golang-united-courses/internal/repositories/db"
-	"golang-united-courses/internal/utils"
 )
 
 type CoursePGSQL struct {
@@ -16,8 +16,7 @@ func (p *CoursePGSQL) Create(title, desciption string) (string, error) {
 	var course models.Course
 	course.Title = title
 	course.Description = desciption
-	err := p.DB.Create(&course).Error
-	if err != nil {
+	if err := p.DB.Create(&course).Error; err != nil {
 		return "", err
 	}
 	return course.ID.String(), nil
@@ -29,10 +28,9 @@ func (p *CoursePGSQL) Delete(id string) error {
 		return err
 	}
 	if course.IsDeleted != 0 {
-		return utils.ErrCourseWasDeleted
+		return internal.ErrCourseWasDeleted
 	}
-	err = p.DB.Model(&Course).Where("id = ?", id).Update("is_deleted", 1).Error
-	if err != nil {
+	if err = p.DB.Model(&Course).Where("id = ?", id).Update("is_deleted", 1).Error; err != nil {
 		return err
 	}
 	return nil
@@ -49,8 +47,7 @@ func (p *CoursePGSQL) Update(id, title, desciption string) error {
 	if desciption != "" {
 		course.Description = desciption
 	}
-	err = p.DB.Updates(&course).Error
-	if err != nil {
+	if err = p.DB.Updates(&course).Error; err != nil {
 		return err
 	}
 	return nil
@@ -58,11 +55,10 @@ func (p *CoursePGSQL) Update(id, title, desciption string) error {
 
 func (p *CoursePGSQL) GetById(id string) (models.Course, error) {
 	var course models.Course
-	err := p.DB.Model(&Course).Where("id = ?", id).First(&course).Error
-	if err != nil {
+	if err := p.DB.Model(&Course).Where("id = ?", id).First(&course).Error; err != nil {
 		switch err.Error() {
-		case utils.ErrRecordNotFound.Error():
-			return course, utils.ErrCourseNotFound
+		case internal.ErrRecordNotFound.Error():
+			return course, internal.ErrCourseNotFound
 		default:
 			return course, err
 		}
@@ -82,8 +78,7 @@ func (p *CoursePGSQL) List(showDeleted bool, limit, offset int32) ([]models.Cour
 	if !showDeleted {
 		q.Where("is_deleted = ?", 0)
 	}
-	err := q.Find(&courses).Error
-	if err != nil {
+	if err := q.Find(&courses).Error; err != nil {
 		return nil, err
 	}
 	return courses, nil

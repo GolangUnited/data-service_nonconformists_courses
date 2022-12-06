@@ -1,4 +1,4 @@
-package utils
+package internal
 
 import (
 	"errors"
@@ -14,4 +14,5 @@ var (
 	ErrInvalidFormat        = errors.New("invalid format")
 	ErrInvalidStatus        = errors.New("this status can't be set")
 	ErrInvalidUUIDFormat    = errors.New("invalid UUID format")
+	ErrOutOfRange           = errors.New("value out of range")
 )
