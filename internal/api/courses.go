@@ -189,6 +189,8 @@ func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseReque
 			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
+	default:
+		log.Println("Attempt to Join already accepted course.")
 	}
 	return &emptypb.Empty{}, nil
 }
