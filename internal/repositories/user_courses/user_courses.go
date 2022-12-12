@@ -19,16 +19,17 @@ func (p *UserCoursePGSQL) Join(uc models.UserCourse) error {
 	return nil
 }
 
-func (p *UserCoursePGSQL) GetUserCourse(uc *models.UserCourse) error {
-	if err := p.DB.First(&uc).Error; err != nil {
+func (p *UserCoursePGSQL) GetUserCourse(user_id, course_id string) (models.UserCourse, error) {
+	var uc models.UserCourse
+	if err := p.DB.Model(&models.UserCourse{}).Where("course_id = ? AND user_id = ?", course_id, user_id).First(&uc).Error; err != nil {
 		switch err.Error() {
 		case internal.ErrRecordNotFound.Error():
-			return internal.ErrUserCourseNotFound
+			return models.UserCourse{}, internal.ErrUserCourseNotFound
 		default:
-			return err
+			return models.UserCourse{}, err
 		}
 	}
-	return nil
+	return uc, nil
 }
 
 func (p *UserCoursePGSQL) UpdateUserCourse(uc models.UserCourse) error {
@@ -40,8 +41,7 @@ func (p *UserCoursePGSQL) UpdateUserCourse(uc models.UserCourse) error {
 
 func (p *UserCoursePGSQL) ListUserCourse(user_id, course_id string, limit, offset int32, showDeleted bool) ([]models.UserCourse, error) {
 	var userCourses []models.UserCourse
-	var UserCourse models.UserCourse
-	q := p.DB.Model(&UserCourse)
+	q := p.DB.Model(&models.UserCourse{})
 	if limit > 0 {
 		q.Limit(int(limit))
 	}

@@ -10,8 +10,6 @@ type CoursePGSQL struct {
 	*db.PostgreSql
 }
 
-var Course models.Course
-
 func (p *CoursePGSQL) Create(title, desciption string) (string, error) {
 	var course models.Course
 	course.Title = title
@@ -23,6 +21,7 @@ func (p *CoursePGSQL) Create(title, desciption string) (string, error) {
 }
 
 func (p *CoursePGSQL) Delete(id string) error {
+	var Course models.Course
 	course, err := p.GetById(id)
 	if err != nil {
 		return err
@@ -55,12 +54,12 @@ func (p *CoursePGSQL) Update(id, title, desciption string) error {
 
 func (p *CoursePGSQL) GetById(id string) (models.Course, error) {
 	var course models.Course
-	if err := p.DB.Model(&Course).Where("id = ?", id).First(&course).Error; err != nil {
+	if err := p.DB.Model(&course).Where("id = ?", id).First(&course).Error; err != nil {
 		switch err.Error() {
 		case internal.ErrRecordNotFound.Error():
-			return course, internal.ErrCourseNotFound
+			return models.Course{}, internal.ErrCourseNotFound
 		default:
-			return course, err
+			return models.Course{}, err
 		}
 	}
 	return course, nil
@@ -68,6 +67,7 @@ func (p *CoursePGSQL) GetById(id string) (models.Course, error) {
 
 func (p *CoursePGSQL) List(showDeleted bool, limit, offset int32) ([]models.Course, error) {
 	var courses []models.Course
+	var Course models.Course
 	q := p.DB.Model(&Course)
 	if limit > 0 {
 		q.Limit(int(limit))

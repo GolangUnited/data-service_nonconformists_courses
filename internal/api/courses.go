@@ -27,27 +27,21 @@ func New(icm interfaces.CourseManager) *CourseServer {
 	}
 }
 
-func getUserCourseUUID(cid, uid string) (models.UserCourse, error) {
-	var uc models.UserCourse
-	courseId, err := uuid.Parse(cid)
-	if err != nil {
-		return models.UserCourse{}, err
+func checkUserCourseUUID(cid, uid string) bool {
+	if _, err := uuid.Parse(cid); err != nil {
+		return false
 	}
-	uc.CourseID = courseId
-	userId, err := uuid.Parse(uid)
-	if err != nil {
-		return models.UserCourse{}, err
+	if _, err := uuid.Parse(uid); err != nil {
+		return false
 	}
-	uc.UserID = userId
-	return uc, nil
+	return true
 }
 
 func (cs *CourseServer) getUserCourse(cid, uid string) (models.UserCourse, error) {
-	uc, err := getUserCourseUUID(cid, uid)
-	if err != nil {
+	if uuidCheck := checkUserCourseUUID(cid, uid); !uuidCheck {
 		return models.UserCourse{}, status.Error(codes.InvalidArgument, internal.ErrInvalidUUIDFormat.Error())
 	}
-	err = cs.DB.GetUserCourse(&uc)
+	uc, err := cs.DB.GetUserCourse(uid, cid)
 	if err != nil {
 		switch err.Error() {
 		case internal.ErrUserCourseNotFound.Error():
@@ -155,11 +149,10 @@ func (cs *CourseServer) List(ctx context.Context, request *ListRequest) (*ListRe
 }
 
 func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseRequest) (*emptypb.Empty, error) {
-	uc, err := getUserCourseUUID(request.GetCourseId(), request.GetUserId())
-	if err != nil {
+	if uuidCheck := checkUserCourseUUID(request.GetCourseId(), request.GetUserId()); !uuidCheck {
 		return nil, status.Error(codes.InvalidArgument, internal.ErrInvalidUUIDFormat.Error())
 	}
-	result, err := cs.DB.GetById(request.GetCourseId())
+	course, err := cs.DB.GetById(request.GetCourseId())
 	if err != nil {
 		switch err.Error() {
 		case internal.ErrCourseNotFound.Error():
@@ -169,23 +162,31 @@ func (cs *CourseServer) JoinCourse(ctx context.Context, request *JoinCourseReque
 			return nil, status.Error(codes.Internal, internal.ErrInternal.Error())
 		}
 	}
-	if result.IsDeleted != 0 {
+	if course.IsDeleted != 0 {
 		return nil, status.Error(codes.Aborted, internal.ErrCourseWasDeleted.Error())
 	}
-	err = cs.DB.GetUserCourse(&uc)
-	switch {
-	case err.Error() == internal.ErrUserCourseNotFound.Error():
-		if err = cs.DB.Join(uc); err != nil {
+	uc, err := cs.DB.GetUserCourse(request.GetUserId(), request.GetCourseId())
+	if err != nil {
+		switch err.Error() {
+		case internal.ErrUserCourseNotFound.Error():
+			uc.CourseID = uuid.MustParse(request.GetCourseId())
+			uc.UserID = uuid.MustParse(request.GetUserId())
+			if err = cs.DB.Join(uc); err != nil {
+				log.Printf("internal error: %s", err.Error())
+				return nil, status.Error(codes.Internal, internal.ErrInternal.Error())
+			}
+		default:
 			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, internal.ErrInternal.Error())
 		}
-	case uc.Status == models.Declined:
+	}
+	if uc.Status == models.Declined {
 		uc.Status = models.Joined
 		if err = cs.DB.UpdateUserCourse(uc); err != nil {
 			log.Printf("internal error: %s", err.Error())
 			return nil, status.Error(codes.Internal, internal.ErrInternal.Error())
 		}
-	default:
+	} else {
 		log.Println("Attempt to Join already accepted course.")
 	}
 	return &emptypb.Empty{}, nil
@@ -255,9 +256,6 @@ func (cs *CourseServer) SetStatus(ctx context.Context, request *SetStatusRequest
 }
 
 func (cs *CourseServer) ListUserCourse(ctx context.Context, request *ListUserCourseRequest) (*ListUserCourseResponse, error) {
-	if _, err := getUserCourseUUID(request.GetCourseId(), request.GetUserId()); err != nil {
-		return nil, status.Error(codes.InvalidArgument, internal.ErrInvalidUUIDFormat.Error())
-	}
 	userCourses, err := cs.DB.ListUserCourse(request.GetUserId(), request.GetCourseId(), request.GetLimit(), request.GetOffset(), request.GetShowDeleted())
 	if err != nil {
 		log.Printf("internal error: %s", err.Error())
